@@ -1,5 +1,5 @@
 # Hugo configuration file
-title: My Site
+title: 羽咋市英語教育
 
 # import hextra as module
 module:
@@ -18,29 +18,25 @@ markup:
 
 menu:
   main:
-    - name: Docs
-      pageRef: /docs
+    - name: ホーム
+      pageRef: /
       weight: 1
-    - name: About
-      pageRef: /about
+    - name: リソース
+      pageRef: /resources
       weight: 2
-    - name: Contact ↗
-      url: "https://github.com/imfing"
+    - name: サイト
+      pageRef: /sites
       weight: 3
-    - name: Search
+    - name: ツール
+      pageRef: /tools
       weight: 4
+    - name: について
+      pageRef: /about
+      weight: 5
+    - name: Search
+      weight: 6
       params:
         type: search
-    - name: GitHub
-      weight: 5
-      url: "https://github.com/imfing/hextra-starter-template"
-      params:
-        icon: github
-    - name: Twitter
-      weight: 6
-      url: "https://twitter.com/"
-      params:
-        icon: x-twitter
 
 params:
   navbar:
@@ -49,8 +45,7 @@ params:
 
   footer:
     displayCopyright: false
-    displayPoweredBy: true
+    displayPoweredBy: false
 
   editURL:
-    enable: true
-    base: "https://github.com/imfing/hextra-starter-template/edit/main/content"
+    enable: false
