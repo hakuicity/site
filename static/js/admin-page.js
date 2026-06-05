@@ -3,7 +3,11 @@
 // Reads all student data via Supabase (RLS allows this for elevated roles).
 'use strict';
 
-(function () {
+(function waitForHk() {
+  if (typeof window.hk === 'undefined') {
+    setTimeout(waitForHk, 50);
+    return;
+  }
   const root = document.getElementById('hk-admin-page');
   if (!root) return;
 
