@@ -23,6 +23,6 @@ toc: false
 {{< cards >}}
   {{< card link="resources" title="リソース" icon="book-open" subtitle="教材・カリキュラム・指導案など英語教育の資料集" >}}
   {{< card link="sites" title="サイト" icon="globe-alt" subtitle="学習に役立つウェブサイト・オンラインコンテンツ一覧" >}}
-  {{< card link="tools" title="教育ツール" icon="computer-desktop" subtitle="授業で使えるデジタルツール・アプリのご紹介" >}}
+  {{< card link="tools" title="教育ツール" icon="desktop-computer" subtitle="授業で使えるデジタルツール・アプリのご紹介" >}}
   {{< card link="about" title="について" icon="information-circle" subtitle="羽咋市英語教育プログラムの目的と概要" >}}
 {{< /cards >}}
