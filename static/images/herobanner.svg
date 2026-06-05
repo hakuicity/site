@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-label="羽咋市英語教育">
+  <defs>
+    <!-- Sky-to-sea background gradient -->
+    <linearGradient id="hk-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#f6f1e6"/>
+      <stop offset="58%"  stop-color="#dce8f4"/>
+      <stop offset="100%" stop-color="#b8d2e8"/>
+    </linearGradient>
+
+    <!-- Sea gradient -->
+    <linearGradient id="hk-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#5a8fb0"/>
+      <stop offset="100%" stop-color="#2e6080"/>
+    </linearGradient>
+
+    <!-- Ink-wash blobs (suiboku-ga) -->
+    <radialGradient id="hk-wash-l" cx="20%" cy="35%" r="40%">
+      <stop offset="0%"   stop-color="#82aec8" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#82aec8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hk-wash-r" cx="80%" cy="45%" r="45%">
+      <stop offset="0%"   stop-color="#9ab8cc" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#9ab8cc" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hk-wash-c" cx="52%" cy="12%" r="32%">
+      <stop offset="0%"   stop-color="#c0d5e5" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#c0d5e5" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft ink-displacement filter on main title text -->
+    <filter id="hk-ink" x="-6%" y="-10%" width="112%" height="130%">
+      <feTurbulence type="turbulence" baseFrequency="0.035 0.055"
+                    numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise"
+                         scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- Very subtle washi-paper texture on whole canvas -->
+    <filter id="hk-paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75"
+                    numOctaves="4" seed="2" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blended"/>
+      <feComposite in="blended" in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+
+  <!-- ── Canvas ──────────────────────────────────────────────── -->
+  <rect width="1200" height="400" fill="url(#hk-bg)"/>
+
+  <!-- Washi texture overlay -->
+  <rect width="1200" height="400" fill="#f0e8d8" opacity="0.06" filter="url(#hk-paper)"/>
+
+  <!-- ── Ink-wash atmosphere ─────────────────────────────────── -->
+  <ellipse cx="240"  cy="155" rx="270" ry="200" fill="url(#hk-wash-l)"/>
+  <ellipse cx="960"  cy="180" rx="300" ry="230" fill="url(#hk-wash-r)"/>
+  <ellipse cx="640"  cy="55"  rx="210" ry="120" fill="url(#hk-wash-c)"/>
+
+  <!-- ── Noto-Peninsula mountain silhouettes ──────────────────── -->
+  <!-- Far range – pale and hazy -->
+  <path d="M0 305
+           L70 252 L160 272 L270 208 L375 242 L480 192 L580 222
+           L670 202 L760 235 L870 182 L980 215 L1090 190 L1200 218
+           L1200 400 L0 400Z"
+        fill="#aec2d0" opacity="0.48"/>
+
+  <!-- Mid range -->
+  <path d="M0 338
+           L90 298 L210 318 L340 272 L490 298 L620 260 L740 282
+           L880 252 L1005 275 L1110 258 L1200 278
+           L1200 400 L0 400Z"
+        fill="#7898ac" opacity="0.65"/>
+
+  <!-- ── Coastal foreground / surf ────────────────────────────── -->
+  <path d="M0 366
+           Q150 356 300 363 Q480 372 600 362
+           Q750 352 900 362 Q1050 372 1200 362
+           L1200 400 L0 400Z"
+        fill="#4f7fa0" opacity="0.55"/>
+
+  <!-- Sea band -->
+  <rect x="0" y="368" width="1200" height="32" fill="url(#hk-sea)" opacity="0.82"/>
+
+  <!-- Wave shimmer lines -->
+  <path d="M0 372 Q200 367 400 373 Q600 379 800 373 Q1000 368 1200 373"
+        fill="none" stroke="white" stroke-width="0.8" opacity="0.38"/>
+  <path d="M0 379 Q200 375 400 380 Q600 385 800 380 Q1000 375 1200 380"
+        fill="none" stroke="white" stroke-width="0.55" opacity="0.25"/>
+
+  <!-- ── Japanese aesthetic accents ───────────────────────────── -->
+  <!-- Left red brushstroke bar -->
+  <rect x="84" y="68" width="5" height="248" rx="2.5" fill="#c42000" opacity="0.70"/>
+
+  <!-- Small ink-splash drops near the bar -->
+  <circle cx="212" cy="198" r="4.5" fill="#18202c" opacity="0.18"/>
+  <circle cx="216" cy="208" r="2.8" fill="#18202c" opacity="0.12"/>
+  <circle cx="207" cy="214" r="1.9" fill="#18202c" opacity="0.09"/>
+
+  <!-- ── Main calligraphic title ───────────────────────────────── -->
+  <text
+    x="600" y="220"
+    font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho','MS Mincho',Georgia,serif"
+    font-size="106" font-weight="700"
+    text-anchor="middle"
+    fill="#16202c"
+    letter-spacing="12"
+    filter="url(#hk-ink)">羽咋市英語教育</text>
+
+  <!-- English subtitle -->
+  <text
+    x="600" y="270"
+    font-family="'Noto Sans JP','Hiragino Kaku Gothic ProN','Meiryo',Arial,sans-serif"
+    font-size="20" font-weight="400"
+    text-anchor="middle"
+    fill="#4a5c6e"
+    letter-spacing="6">Hakui City English Education</text>
+
+  <!-- Thin rule below subtitle -->
+  <line x1="370" y1="288" x2="830" y2="288"
+        stroke="#8899aa" stroke-width="0.8" opacity="0.42"/>
+
+  <!-- ── Vermilion hanko seal (upper right) ───────────────────── -->
+  <g transform="translate(1094, 148)" opacity="0.88">
+    <circle r="50" fill="#c42000" fill-opacity="0.07"/>
+    <circle r="50" fill="none" stroke="#c42000" stroke-width="2.8"/>
+    <circle r="43" fill="none" stroke="#c42000" stroke-width="1.4"/>
+    <!-- Four horizontal lines simulating seal script texture -->
+    <line x1="-28" y1="-22" x2="28" y2="-22" stroke="#c42000" stroke-width="0.7" opacity="0.35"/>
+    <line x1="-28" y1="-8"  x2="28" y2="-8"  stroke="#c42000" stroke-width="0.7" opacity="0.35"/>
+    <line x1="-28" y1="6"   x2="28" y2="6"   stroke="#c42000" stroke-width="0.7" opacity="0.35"/>
+    <line x1="-28" y1="20"  x2="28" y2="20"  stroke="#c42000" stroke-width="0.7" opacity="0.35"/>
+    <!-- Seal kanji -->
+    <text y="-11"
+      font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif"
+      font-size="17" font-weight="700"
+      text-anchor="middle" fill="#c42000">英語</text>
+    <text y="14"
+      font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif"
+      font-size="17" font-weight="700"
+      text-anchor="middle" fill="#c42000">教育</text>
+  </g>
+</svg>
