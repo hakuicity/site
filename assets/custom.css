@@ -1,1 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap');
 
+/* ── Hero banner ──────────────────────────────────────────────── */
+.hk-hero {
+  width: calc(100% + 3rem);
+  margin: -1.5rem -1.5rem 2.5rem;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 24px rgba(40, 60, 80, 0.12);
+}
+
+.hk-hero svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Intro blurb ──────────────────────────────────────────────── */
+.hk-intro {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  text-align: center;
+  color: #445566;
+  font-size: 1.05rem;
+  line-height: 2;
+  margin: 0 auto 2.5rem;
+  max-width: 680px;
+}
+
+/* ── Thin gradient divider ────────────────────────────────────── */
+.hk-rule {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #99aabb 30%, #99aabb 70%, transparent);
+  margin: 0.5rem 0 2rem;
+  opacity: 0.5;
+}
+
+/* ── Section headings use Japanese serif ─────────────────────── */
+.hk-section-title {
+  font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  letter-spacing: 0.08em;
+}
