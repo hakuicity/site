@@ -3,12 +3,7 @@ title: 羽咋市英語教育
 toc: false
 ---
 
-<div class="hk-hero">
-  <img src="/images/hero-banner.svg"
-       alt="羽咋市英語教育 — Hakui City English Education"
-       width="1200" height="400"
-       style="width:100%;height:auto;display:block;">
-</div>
+{{< hero-banner >}}
 
 <p class="hk-intro">
 能登半島の豊かな自然に育まれた羽咋市では、国際社会で活躍できる人材の育成を目指し、<br>
