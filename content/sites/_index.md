@@ -5,6 +5,13 @@ toc: false
 
 英語の学習や授業づくりに役立つウェブサイトを目的別にまとめました。
 
+## 練習ツール
+
+{{< cards >}}
+  {{< card link="https://qrowzk.github.io/EikenApp/" title="EIKENAPP" icon="globe-alt" subtitle="Practice tool for EIKEN levels 5-Pre2." >}}
+{{< /cards >}}
+
+
 ## 総合英語学習
 
 {{< cards >}}
