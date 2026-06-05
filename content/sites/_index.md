@@ -11,6 +11,11 @@ toc: false
   {{< card link="https://www.lentrance.com/school/login" title="Lentrance" icon="globe-alt" subtitle="LENTRANCEログイン。" >}}
 {{< /cards >}}
 
+{{< cards >}}
+  {{< card link="https://hakuicity.github.io/LetsTry2Utility/" title="Let's Try 2 Utility" icon="globe-alt" subtitle="Lets Try 2のコンパニオンアップ。" >}}
+{{< /cards >}}
+
+
 ## 練習ツール
 
 {{< cards >}}
