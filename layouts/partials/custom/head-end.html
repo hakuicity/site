@@ -1,1 +1,65 @@
+{{/* layouts/partials/custom/head-end.html
+     Hextra calls this partial at the end of <head>.
+     We use it to inject the Supabase SDK and nav auth button script globally.
+*/}}
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="{{ "/site/js/supabase-client.js" | absURL }}" defer></script>
+<script defer>
+// Inject auth nav button once DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for hk client to be available
+  var attempts = 0;
+  var interval = setInterval(function() {
+    attempts++;
+    if (typeof window.hk === 'undefined') {
+      if (attempts > 30) clearInterval(interval);
+      return;
+    }
+    clearInterval(interval);
+    injectNavButton();
+  }, 100);
+
+  function injectNavButton() {
+    // Find the Hextra nav end area (search button container)
+    var nav = document.querySelector('nav');
+    if (!nav) return;
+
+    var btn = document.createElement('a');
+    btn.id = 'hk-nav-auth';
+    btn.href = '/site/login/';
+    btn.textContent = 'ログイン';
+    btn.style.cssText = [
+      'display:inline-flex', 'align-items:center', 'gap:5px',
+      'padding:6px 14px', 'border-radius:7px',
+      'border:1.5px solid currentColor', 'font-size:13px',
+      'font-weight:700', 'text-decoration:none',
+      'color:inherit', 'opacity:.8', 'transition:opacity .15s',
+      'white-space:nowrap', 'margin-left:8px'
+    ].join(';');
+    btn.onmouseenter = function() { btn.style.opacity = '1'; };
+    btn.onmouseleave = function() { btn.style.opacity = '.8'; };
+
+    // Insert before the hamburger / last flex item
+    var navItems = nav.querySelector('.flex.items-center');
+    if (navItems) navItems.appendChild(btn);
+    else nav.appendChild(btn);
+
+    // Update button with auth state
+    window.hk.onAuthChange(function(user) {
+      if (user) {
+        window.hk.getProfile(user.id).then(function(profile) {
+          var name = (profile && profile.display_name) ? profile.display_name : user.email.split('@')[0];
+          btn.textContent = '👤 ' + name;
+          btn.href = '/site/account/';
+          btn.style.opacity = '1';
+        });
+      } else {
+        btn.textContent = 'ログイン';
+        btn.href = '/site/login/';
+        btn.style.opacity = '.8';
+      }
+    });
+  }
+});
+</script>
