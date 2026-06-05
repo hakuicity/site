@@ -2,7 +2,11 @@
 // Shows synced EikenApp stats, interview history, and profile settings.
 'use strict';
 
-(function () {
+(function waitForHk() {
+  if (typeof window.hk === 'undefined') {
+    setTimeout(waitForHk, 50);
+    return;
+  }
   const root = document.getElementById('hk-account-page');
   if (!root) return;
 
