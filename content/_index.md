@@ -4,7 +4,7 @@ toc: false
 ---
 
 <div class="hk-hero">
-  <img src="/images/herobanner.svg"
+  <img src="/images/hero-banner.svg"
        alt="羽咋市英語教育 — Hakui City English Education"
        width="1200" height="400"
        style="width:100%;height:auto;display:block;">
