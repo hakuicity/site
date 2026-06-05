@@ -9,6 +9,7 @@
   box-shadow: 0 4px 24px rgba(40, 60, 80, 0.12);
 }
 
+.hk-hero img,
 .hk-hero svg {
   display: block;
   width: 100%;
