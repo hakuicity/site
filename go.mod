@@ -1,4 +1,4 @@
-module github.com/imfing/hextra-starter-template
+module github.com/hakuicity/site
 
 go 1.23
 
