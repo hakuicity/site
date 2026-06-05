@@ -10,7 +10,7 @@ toc: false
 
 {{< cards >}}
   {{< card link="https://classroom.google.com/" title="Google Classroom" icon="desktop-computer" subtitle="課題配布・提出・フィードバックを一元管理。Googleアカウントで利用可" >}}
-  {{< card link="https://www.microsoft.com/ja-jp/education/products/teams" title="Microsoft Teams for Education" icon="computer-desktop" subtitle="チャット・ビデオ会議・課題機能を備えた学習管理ツール" >}}
+  {{< card link="https://www.microsoft.com/ja-jp/education/products/teams" title="Microsoft Teams for Education" icon="desktop-computer" subtitle="チャット・ビデオ会議・課題機能を備えた学習管理ツール" >}}
 {{< /cards >}}
 
 ## インタラクティブ授業ツール
