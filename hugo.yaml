@@ -37,11 +37,14 @@ menu:
     - name: について
       pageRef: /about
       weight: 5
-    - name: Search
+    - name: マイページ
+      pageRef: /login
       weight: 6
+    - name: Search
+      weight: 7
       params:
         type: search
-
+        
 params:
   navbar:
     displayTitle: true
