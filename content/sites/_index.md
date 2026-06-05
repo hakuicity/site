@@ -5,6 +5,12 @@ toc: false
 
 英語の学習や授業づくりに役立つウェブサイトを目的別にまとめました。
 
+## ディジタル教科書
+
+{{< cards >}}
+  {{< card link="https://www.lentrance.com/school/login" title="Lentrance" icon="globe-alt" subtitle="LENTRANCEログイン。" >}}
+{{< /cards >}}
+
 ## 練習ツール
 
 {{< cards >}}
