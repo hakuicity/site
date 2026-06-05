@@ -2,7 +2,11 @@
 // Renders into #hk-login-page. Redirects to /account/ on success.
 'use strict';
 
-(function () {
+(function waitForHk() {
+  if (typeof window.hk === 'undefined') {
+    setTimeout(waitForHk, 50);
+    return;
+  }
   const root = document.getElementById('hk-login-page');
   if (!root) return;
 
