@@ -8,7 +8,7 @@ toc: false
 ## 練習ツール
 
 {{< cards >}}
-  {{< card link="https://qrowzk.github.io/EikenApp/" title="EIKENAPP" icon="globe-alt" subtitle="Practice tool for EIKEN levels 5-Pre2." >}}
+  {{< card link="https://hakuicity.github.io/EikenApp/" title="EIKENAPP" icon="globe-alt" subtitle="Practice tool for EIKEN levels 5-Pre2." >}}
 {{< /cards >}}
 
 
