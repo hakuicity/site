@@ -65,15 +65,43 @@
 
       <!-- Login form -->
       <div id="ap-login">
-        <div class="hk-fld">
-          <label class="hk-lbl">メールアドレス</label>
-          <input class="hk-inp" type="email" id="ap-lemail" placeholder="example@school.ed.jp" autocomplete="email">
+        <div style="display:flex;gap:0;border:1.5px solid #d1d5db;border-radius:8px;overflow:hidden;margin-bottom:18px">
+          <button id="ap-tab-email" onclick="apSwitchTab('email')"
+            style="flex:1;padding:8px;background:#1565C0;color:#fff;border:none;
+                   font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+            📧 メール
+          </button>
+          <button id="ap-tab-sid" onclick="apSwitchTab('sid')"
+            style="flex:1;padding:8px;background:#fff;color:#374151;border:none;
+                   border-left:1.5px solid #d1d5db;font-size:12px;font-weight:700;
+                   cursor:pointer;font-family:inherit">
+            🎓 学籍番号
+          </button>
         </div>
-        <div class="hk-fld">
-          <label class="hk-lbl">パスワード</label>
-          <input class="hk-inp" type="password" id="ap-lpass" placeholder="••••••••" autocomplete="current-password">
+
+        <div id="ap-email-fields">
+          <div class="hk-fld">
+            <label class="hk-lbl">メールアドレス</label>
+            <input class="hk-inp" type="email" id="ap-lemail" placeholder="example@school.ed.jp" autocomplete="email">
+          </div>
+          <div class="hk-fld">
+            <label class="hk-lbl">パスワード</label>
+            <input class="hk-inp" type="password" id="ap-lpass" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button class="hk-forgot" id="ap-forgot">パスワードをお忘れの場合</button>
         </div>
-        <button class="hk-forgot" id="ap-forgot">パスワードをお忘れの場合</button>
+
+        <div id="ap-sid-fields" style="display:none">
+          <div class="hk-fld">
+            <label class="hk-lbl">学籍番号</label>
+            <input class="hk-inp" type="text" id="ap-lsid" placeholder="例：S001" autocomplete="username">
+          </div>
+          <div class="hk-fld">
+            <label class="hk-lbl">パスワード</label>
+            <input class="hk-inp" type="password" id="ap-lsidpass" placeholder="••••••••" autocomplete="current-password">
+          </div>
+        </div>
+
         <button class="hk-btn-primary" id="ap-login-btn">ログイン</button>
         <div class="hk-toggle">
           アカウントをお持ちでない方は
@@ -128,19 +156,47 @@
     btn.textContent = loading ? '処理中...' : label;
   }
 
+  let _apLoginTab = 'email';
+  function apSwitchTab(tab) {
+    _apLoginTab = tab;
+    const emailActive = tab === 'email';
+    $('ap-tab-email').style.background = emailActive ? '#1565C0' : '#fff';
+    $('ap-tab-email').style.color      = emailActive ? '#fff'    : '#374151';
+    $('ap-tab-sid').style.background   = emailActive ? '#fff'    : '#1565C0';
+    $('ap-tab-sid').style.color        = emailActive ? '#374151' : '#fff';
+    $('ap-email-fields').style.display = emailActive ? '' : 'none';
+    $('ap-sid-fields').style.display   = emailActive ? 'none' : '';
+  }
+  window.apSwitchTab = apSwitchTab;
+
   async function doLogin() {
-    const email = $('ap-lemail').value.trim();
-    const pass  = $('ap-lpass').value;
-    if (!email || !pass) { err('メールアドレスとパスワードを入力してください。'); return; }
-    setLoading('ap-login-btn', true, 'ログイン');
     clearMsg();
-    try {
-      await window.hk.signIn(email, pass);
-      window.location.href = '/site/account/';
-    } catch (e) {
-      err('ログインに失敗しました：' + (e.message || '入力内容をご確認ください。'));
-    } finally {
-      setLoading('ap-login-btn', false, 'ログイン');
+    if (_apLoginTab === 'sid') {
+      const sid  = ($('ap-lsid')     || {value:''}).value.trim();
+      const pass = ($('ap-lsidpass') || {value:''}).value;
+      if (!sid || !pass) { err('学籍番号とパスワードを入力してください。'); return; }
+      setLoading('ap-login-btn', true, 'ログイン');
+      try {
+        await window.hk.signInWithStudentId(sid, pass);
+        window.location.href = '/site/account/';
+      } catch (e) {
+        err('ログインに失敗しました：学籍番号またはパスワードが正しくありません。');
+      } finally {
+        setLoading('ap-login-btn', false, 'ログイン');
+      }
+    } else {
+      const email = $('ap-lemail').value.trim();
+      const pass  = $('ap-lpass').value;
+      if (!email || !pass) { err('メールアドレスとパスワードを入力してください。'); return; }
+      setLoading('ap-login-btn', true, 'ログイン');
+      try {
+        await window.hk.signIn(email, pass);
+        window.location.href = '/site/account/';
+      } catch (e) {
+        err('ログインに失敗しました：' + (e.message || '入力内容をご確認ください。'));
+      } finally {
+        setLoading('ap-login-btn', false, 'ログイン');
+      }
     }
   }
 
@@ -180,6 +236,8 @@
   $('ap-to-signup').onclick  = () => showForm('signup');
   $('ap-to-login').onclick   = () => showForm('login');
   $('ap-forgot').onclick     = doForgot;
-  $('ap-lpass').addEventListener('keydown',  e => { if (e.key === 'Enter') doLogin(); });
+  $('ap-lpass').addEventListener('keydown',    e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('ap-lsidpass') && document.getElementById('ap-lsidpass')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   $('ap-spass').addEventListener('keydown',  e => { if (e.key === 'Enter') doSignup(); });
 })();

@@ -601,9 +601,12 @@
       </td>
       <td>${esc(r.school||'—')}</td>
       <td>
-        <span class="enr-badge ${r.linked_user_id ? 'enr-badge-linked' : 'enr-badge-pending'}">
-          ${r.linked_user_id ? '✓ 連携済' : '未連携'}
-        </span>
+        ${r.linked_user_id
+          ? '<span class="enr-badge enr-badge-linked">✓ 連携済</span>'
+          : `<span class="enr-badge enr-badge-pending">未連携</span>
+             <button class="enr-btn-sm enr-create-acct-btn"
+               data-rid="${r.id}" data-num="${r.student_number}" data-name="${r.display_name}"
+               style="margin-left:6px;font-size:11px">アカウント作成</button>`}
       </td>
       <td style="font-size:12px;color:#9ca3af">${new Date(r.enrolled_at).toLocaleDateString('ja-JP')}</td>
       <td>
@@ -635,6 +638,9 @@
         renderTab();
       };
     });
+    el.querySelectorAll('.enr-create-acct-btn').forEach(btn => {
+      btn.onclick = () => showCreateAccountModal(btn.dataset.rid, btn.dataset.num, btn.dataset.name);
+    });
     el.querySelectorAll('.enr-del-btn').forEach(btn => {
       btn.onclick = async () => {
         const r = _roster.find(x => x.id === btn.dataset.rid);
@@ -645,6 +651,78 @@
         renderTab();
       };
     });
+  }
+
+  function showCreateAccountModal(rid, studentNumber, displayName) {
+    // Remove any existing modal
+    const existing = document.getElementById('enr-acct-modal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'enr-acct-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:28px 24px;width:100%;max-width:360px;
+                  box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative">
+        <h3 style="font-size:17px;font-weight:800;margin-bottom:4px">アカウント作成</h3>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:18px">
+          <strong>${displayName}</strong>（学籍番号: ${studentNumber}）<br>
+          ログイン用パスワードを設定してください。
+        </p>
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px">パスワード（8文字以上）</label>
+          <input type="password" id="enr-new-pass" placeholder="••••••••"
+            style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #d1d5db;
+                   font-size:14px;outline:none;box-sizing:border-box;background:#f9fafb">
+        </div>
+        <div style="margin-bottom:18px">
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:4px">パスワード確認</label>
+          <input type="password" id="enr-new-pass2" placeholder="••••••••"
+            style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #d1d5db;
+                   font-size:14px;outline:none;box-sizing:border-box;background:#f9fafb">
+        </div>
+        <div id="enr-modal-err" style="display:none;background:#fef2f2;border:1px solid #fca5a5;
+          border-radius:7px;padding:9px 12px;font-size:13px;color:#b91c1c;margin-bottom:12px"></div>
+        <div style="display:flex;gap:10px">
+          <button id="enr-modal-confirm" class="enr-btn enr-btn-primary" style="flex:1;font-size:14px">作成する</button>
+          <button id="enr-modal-cancel"  class="enr-btn enr-btn-secondary" style="font-size:14px">キャンセル</button>
+        </div>
+        <p style="font-size:11px;color:#9ca3af;margin-top:12px;margin-bottom:0">
+          生徒のログイン：学籍番号「${studentNumber}」とこのパスワードを使います。
+        </p>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const showErr = msg => {
+      const el = document.getElementById('enr-modal-err');
+      el.textContent = msg; el.style.display = 'block';
+    };
+    document.getElementById('enr-modal-cancel').onclick = () => overlay.remove();
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+    document.getElementById('enr-modal-confirm').onclick = async () => {
+      const pass1 = document.getElementById('enr-new-pass').value;
+      const pass2 = document.getElementById('enr-new-pass2').value;
+      if (!pass1 || pass1.length < 8) { showErr('パスワードは8文字以上で設定してください。'); return; }
+      if (pass1 !== pass2) { showErr('パスワードが一致しません。'); return; }
+
+      const btn = document.getElementById('enr-modal-confirm');
+      btn.disabled = true; btn.textContent = '作成中...';
+
+      try {
+        await window.hk.createStudentAccount(studentNumber, pass1);
+        overlay.remove();
+        await loadRoster();
+        renderTab();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = '作成する';
+        if (e.message && e.message.toLowerCase().includes('already registered')) {
+          showErr('このアカウントはすでに作成されています。');
+        } else {
+          showErr('作成に失敗しました：' + (e.message || ''));
+        }
+      }
+    };
   }
 
   async function addOneStudent() {

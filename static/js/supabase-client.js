@@ -232,6 +232,71 @@
       if (error) console.warn('[HakuiAdmin] deleteRosterEntry error:', error.message);
     }
 
+
+    // ── Student-ID auth ─────────────────────────────────────────────────────
+    // Derives a consistent system email from a student number.
+    // e.g. "S001" → "st.s001@hakuicity.ed.jp"
+    function hkStudentEmail(studentNumber) {
+      const safe = String(studentNumber).toLowerCase().replace(/[^a-z0-9-]/g, '');
+      return 'st.' + safe + '@hakuicity.ed.jp';
+    }
+
+    // Sign in using student number + password (no email needed)
+    async function hkSignInWithStudentId(studentNumber, password) {
+      const email = hkStudentEmail(studentNumber);
+      return await hkSignIn(email, password);
+    }
+
+    // Create a Supabase auth account for a student (called by teacher from
+    // enrollment panel). Uses a temporary isolated client so the teacher's
+    // own session is never disturbed.
+    async function hkCreateStudentAccount(studentNumber, password) {
+      const email = hkStudentEmail(studentNumber);
+
+      // Isolated client — no localStorage writes, won't touch teacher session
+      const tmp = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+          persistSession:     false,
+          autoRefreshToken:   false,
+          detectSessionInUrl: false,
+          storage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+        }
+      });
+
+      const { data, error } = await tmp.auth.signUp({ email, password });
+      if (error) throw error;
+
+      if (data.user && data.session) {
+        // Look up roster entry for class/school info
+        const { data: entry } = await hkClient
+          .from('student_roster')
+          .select('*')
+          .eq('student_number', studentNumber)
+          .single();
+
+        const profileData = {
+          id:             data.user.id,
+          student_number: studentNumber,
+          role:           'student',
+          display_name:   (entry && entry.display_name) || studentNumber,
+          ...(entry && entry.class_name ? { class_name: entry.class_name } : {}),
+          ...(entry && entry.school     ? { school:     entry.school }     : {})
+        };
+
+        // Student's own session creates their profile (satisfies RLS)
+        await tmp.from('profiles').upsert(profileData);
+
+        // Teacher's session links the roster entry
+        if (entry) {
+          await hkClient
+            .from('student_roster')
+            .update({ linked_user_id: data.user.id })
+            .eq('student_number', studentNumber);
+        }
+      }
+      return data;
+    }
+
     // ── Auth state listener ─────────────────────────────────────────────────
     function hkOnAuthChange(callback) {
       hkClient.auth.onAuthStateChange((_event, session) => {
@@ -265,7 +330,10 @@
       adminImportRoster:            hkAdminImportRoster,
       adminUpdateRosterEntry:       hkAdminUpdateRosterEntry,
       adminDeleteRosterEntry:       hkAdminDeleteRosterEntry,
-      onAuthChange:                 hkOnAuthChange
+      onAuthChange:                 hkOnAuthChange,
+      studentEmail:                 hkStudentEmail,
+      signInWithStudentId:          hkSignInWithStudentId,
+      createStudentAccount:         hkCreateStudentAccount
     };
     console.log('[HakuiClient] window.hk ready');
   }
