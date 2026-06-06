@@ -192,6 +192,31 @@
           <div id="hk-iv-history"></div>
         </div>
 
+        <!-- Admin panel links (admin/teacher only) -->
+        ${(_profile && ['admin','teacher'].includes(_profile.role)) ? `
+        <div class="hk-section">
+          <div class="hk-section-title">🔐 管理者メニュー</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a href="/site/admin/"
+               style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+                      background:#1565C0;color:#fff;border-radius:8px;font-weight:700;
+                      font-size:14px;text-decoration:none;transition:background .15s"
+               onmouseover="this.style.background='#0D47A1'"
+               onmouseout="this.style.background='#1565C0'">
+              📊 管理者ダッシュボード
+            </a>
+            <a href="/site/admin/enrollment/"
+               style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+                      background:#fff;color:#1565C0;border-radius:8px;font-weight:700;
+                      font-size:14px;text-decoration:none;border:1.5px solid #1565C0;
+                      transition:all .15s"
+               onmouseover="this.style.background='#eff6ff'"
+               onmouseout="this.style.background='#fff'">
+              📋 生徒登録・管理
+            </a>
+          </div>
+        </div>` : ''}
+
         <!-- Profile settings -->
         <div class="hk-section">
           <div class="hk-section-title">⚙️ プロフィール設定</div>
