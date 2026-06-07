@@ -82,18 +82,16 @@
     }
     .hk-profile-fld input:focus, .hk-profile-fld select:focus { border-color:#1565C0; }
     .hk-save-ok { color:#166534; font-size:13px; font-weight:600; display:none; }
-    @media(prefers-color-scheme:dark){
-      .hk-stat-card,.hk-page-card { background:#1e293b; border-color:#334155; }
-      .hk-cat-table th,.hk-history-table th { color:#64748b; border-color:#334155; }
-      .hk-cat-table td,.hk-history-table td { border-color:#1e293b; }
-      .hk-bar-wrap { background:#334155; }
-      .hk-level-tab { background:#1e293b; border-color:#475569; color:#f1f5f9; }
-      .hk-level-tab.active { background:#1565C0; border-color:#1565C0; }
-      .hk-profile-fld input,.hk-profile-fld select { background:#0f172a; border-color:#475569; color:#f1f5f9; }
-      .hk-section-title { color:#94a3b8; border-color:#334155; }
-      .hk-user-email { color:#64748b; }
-      .hk-btn-sm { border-color:#475569; color:#94a3b8; }
-    }
+    .dark .hk-stat-card,.dark .hk-page-card { background:#1e293b; border-color:#334155; }
+    .dark .hk-cat-table th,.dark .hk-history-table th { color:#64748b; border-color:#334155; }
+    .dark .hk-cat-table td,.dark .hk-history-table td { border-color:#1e293b; }
+    .dark .hk-bar-wrap { background:#334155; }
+    .dark .hk-level-tab { background:#1e293b; border-color:#475569; color:#f1f5f9; }
+    .dark .hk-level-tab.active { background:#1565C0; border-color:#1565C0; }
+    .dark .hk-profile-fld input,.dark .hk-profile-fld select { background:#0f172a; border-color:#475569; color:#f1f5f9; }
+    .dark .hk-section-title { color:#94a3b8; border-color:#334155; }
+    .dark .hk-user-email { color:#64748b; }
+    .dark .hk-btn-sm { border-color:#475569; color:#94a3b8; }
   `;
   document.head.appendChild(style);
 
