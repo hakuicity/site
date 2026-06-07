@@ -134,25 +134,23 @@
 
     .enr-empty { text-align:center; color:#9ca3af; padding:32px; font-size:14px; }
 
-    @media(prefers-color-scheme:dark){
-      .enr-tab { background:#1e293b; color:#f1f5f9; }
-      .enr-tab.active { background:#1565C0; }
-      .enr-dropzone { background:#1e293b; border-color:#475569; }
-      .enr-dropzone:hover,.enr-dropzone.drag-over { background:#1e3a5f; border-color:#1565C0; }
-      .enr-preview th { background:#0f172a; border-color:#334155; color:#64748b; }
-      .enr-preview td,.enr-table td { border-color:#1e293b; }
-      .enr-table th { border-color:#334155; color:#64748b; }
-      .enr-stat,.enr-class-list-panel { background:#1e293b; border-color:#334155; }
-      .enr-class-list-panel-title { background:#0f172a; border-color:#334155; }
-      .enr-class-item { border-color:#1e293b; }
-      .enr-class-item:hover { background:#0f172a; }
-      .enr-class-item.active { background:#1e3a5f; }
-      .enr-add-form { background:#1e293b; border-color:#334155; }
-      .enr-add-fld input,.enr-search,.enr-select,.enr-inline-inp,.enr-map-fld select {
-        background:#0f172a; border-color:#475569; color:#f1f5f9; }
-      .enr-section-title { border-color:#334155; color:#94a3b8; }
-      .enr-table tr:hover td { background:#0f172a; }
-    }
+    .dark .enr-tab { background:#1e293b; color:#f1f5f9; }
+    .dark .enr-tab.active { background:#1565C0; }
+    .dark .enr-dropzone { background:#1e293b; border-color:#475569; }
+    .dark .enr-dropzone:hover,.dark .enr-dropzone.drag-over { background:#1e3a5f; border-color:#1565C0; }
+    .dark .enr-preview th { background:#0f172a; border-color:#334155; color:#64748b; }
+    .dark .enr-preview td,.dark .enr-table td { border-color:#1e293b; }
+    .dark .enr-table th { border-color:#334155; color:#64748b; }
+    .dark .enr-stat,.dark .enr-class-list-panel { background:#1e293b; border-color:#334155; }
+    .dark .enr-class-list-panel-title { background:#0f172a; border-color:#334155; }
+    .dark .enr-class-item { border-color:#1e293b; }
+    .dark .enr-class-item:hover { background:#0f172a; }
+    .dark .enr-class-item.active { background:#1e3a5f; }
+    .dark .enr-add-form { background:#1e293b; border-color:#334155; }
+    .dark .enr-add-fld input,.dark .enr-search,.dark .enr-select,.dark .enr-inline-inp,.dark .enr-map-fld select {
+      background:#0f172a; border-color:#475569; color:#f1f5f9; }
+    .dark .enr-section-title { border-color:#334155; color:#94a3b8; }
+    .dark .enr-table tr:hover td { background:#0f172a; }
   `;
   document.head.appendChild(style);
 
