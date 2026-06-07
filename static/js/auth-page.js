@@ -1,4 +1,5 @@
-// auth-page.js — login / signup page for hakuicity.github.io/site/login/
+// auth-page.js — login page for hakuicity.github.io/site/login/
+// Signup is admin-only via Supabase dashboard. This page is login-only.
 'use strict';
 
 (function waitForHk() {
@@ -7,6 +8,7 @@
   const root = document.getElementById('hk-login-page');
   if (!root) return;
 
+  // Redirect if already logged in
   window.hk.getUser().then(user => {
     if (user) window.location.href = '/site/account/';
   });
@@ -14,7 +16,7 @@
   root.innerHTML = `
     <style>
       .hk-page-card {
-        max-width: 420px; margin: 32px auto; background: #fff;
+        max-width: 400px; margin: 48px auto; background: #fff;
         border-radius: 16px; padding: 36px 32px;
         box-shadow: 0 4px 24px rgba(0,0,0,.09); border: 1px solid #e5e7eb;
       }
@@ -25,115 +27,81 @@
         .hk-inp { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
         .hk-sub { color: #94a3b8 !important; }
       }
-      .hk-page-card h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; color: #111827; }
-      .hk-sub  { font-size: 14px; color: #6b7280; margin-bottom: 24px; }
+      .hk-page-card h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #111827; }
+      .hk-sub  { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
       .hk-fld  { margin-bottom: 14px; }
-      .hk-lbl  { display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 5px; }
+      .hk-lbl  { display:block; font-size:12px; font-weight:700; color:#374151; margin-bottom:5px; }
       .hk-inp  {
-        width: 100%; padding: 10px 13px; border-radius: 8px;
-        border: 1.5px solid #d1d5db; font-size: 14px; outline: none;
-        transition: border-color .15s; background: #f9fafb; box-sizing: border-box;
+        width:100%; padding:10px 13px; border-radius:8px;
+        border:1.5px solid #d1d5db; font-size:14px; outline:none;
+        transition:border-color .15s; background:#f9fafb; box-sizing:border-box;
       }
-      .hk-inp:focus { border-color: #1565C0; }
+      .hk-inp:focus { border-color:#1565C0; }
       .hk-btn-primary {
-        width: 100%; padding: 12px; border-radius: 8px; border: none;
-        background: #1565C0; color: #fff; font-size: 15px; font-weight: 700;
-        cursor: pointer; margin-top: 6px; transition: background .15s;
+        width:100%; padding:12px; border-radius:8px; border:none;
+        background:#1565C0; color:#fff; font-size:15px; font-weight:700;
+        cursor:pointer; margin-top:6px; transition:background .15s;
       }
-      .hk-btn-primary:hover { background: #0D47A1; }
-      .hk-btn-primary:disabled { background: #93c5fd; cursor: default; }
-      .hk-toggle { text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280; }
-      .hk-toggle button {
-        background: none; border: none; color: #1565C0; font-weight: 700;
-        cursor: pointer; font-size: 13px; padding: 0;
-      }
-      .hk-err { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;
-        padding: 10px 13px; font-size: 13px; color: #b91c1c; margin-bottom: 12px; display: none; }
-      .hk-ok  { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
-        padding: 10px 13px; font-size: 13px; color: #166534; margin-bottom: 12px; display: none; }
-      .hk-hint { font-size: 11px; color: #9ca3af; margin-top: 3px; }
-      .hk-forgot { background: none; border: none; color: #6b7280; font-size: 12px;
-        cursor: pointer; padding: 0; margin-top: 6px; display: block; text-align: right; width: 100%; }
-      .hk-forgot:hover { color: #1565C0; }
+      .hk-btn-primary:hover { background:#0D47A1; }
+      .hk-btn-primary:disabled { background:#93c5fd; cursor:default; }
+      .hk-err { background:#fef2f2; border:1px solid #fca5a5; border-radius:8px;
+        padding:10px 13px; font-size:13px; color:#b91c1c; margin-bottom:12px; display:none; }
+      .hk-ok  { background:#f0fdf4; border:1px solid #86efac; border-radius:8px;
+        padding:10px 13px; font-size:13px; color:#166534; margin-bottom:12px; display:none; }
+      .hk-tabs { display:flex; gap:0; border:1.5px solid #d1d5db; border-radius:8px;
+        overflow:hidden; margin-bottom:18px; }
+      .hk-tab { flex:1; padding:8px; border:none; font-size:12px; font-weight:700;
+        cursor:pointer; font-family:inherit; transition:all .15s; }
+      .hk-tab-active   { background:#1565C0; color:#fff; }
+      .hk-tab-inactive { background:#fff; color:#374151; }
+      .hk-forgot { background:none; border:none; color:#9ca3af; font-size:12px;
+        cursor:pointer; padding:0; margin-top:4px; display:block;
+        text-align:right; width:100%; }
+      .hk-forgot:hover { color:#1565C0; }
     </style>
 
     <div class="hk-page-card">
-      <h1 id="ap-title">ログイン</h1>
-      <p class="hk-sub" id="ap-sub">羽咋市英語教育ポータル</p>
+      <h1>ログイン</h1>
+      <p class="hk-sub">羽咋市英語教育ポータル</p>
       <div class="hk-err" id="ap-err"></div>
       <div class="hk-ok"  id="ap-ok"></div>
 
-      <!-- Login form -->
-      <div id="ap-login">
-        <div style="display:flex;gap:0;border:1.5px solid #d1d5db;border-radius:8px;overflow:hidden;margin-bottom:18px">
-          <button id="ap-tab-email" onclick="apSwitchTab('email')"
-            style="flex:1;padding:8px;background:#1565C0;color:#fff;border:none;
-                   font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
-            📧 メール
-          </button>
-          <button id="ap-tab-sid" onclick="apSwitchTab('sid')"
-            style="flex:1;padding:8px;background:#fff;color:#374151;border:none;
-                   border-left:1.5px solid #d1d5db;font-size:12px;font-weight:700;
-                   cursor:pointer;font-family:inherit">
-            🎓 学籍番号
-          </button>
-        </div>
-
-        <div id="ap-email-fields">
-          <div class="hk-fld">
-            <label class="hk-lbl">メールアドレス</label>
-            <input class="hk-inp" type="email" id="ap-lemail" placeholder="example@school.ed.jp" autocomplete="email">
-          </div>
-          <div class="hk-fld">
-            <label class="hk-lbl">パスワード</label>
-            <input class="hk-inp" type="password" id="ap-lpass" placeholder="••••••••" autocomplete="current-password">
-          </div>
-          <button class="hk-forgot" id="ap-forgot">パスワードをお忘れの場合</button>
-        </div>
-
-        <div id="ap-sid-fields" style="display:none">
-          <div class="hk-fld">
-            <label class="hk-lbl">学籍番号</label>
-            <input class="hk-inp" type="text" id="ap-lsid" placeholder="例：S001" autocomplete="username">
-          </div>
-          <div class="hk-fld">
-            <label class="hk-lbl">パスワード</label>
-            <input class="hk-inp" type="password" id="ap-lsidpass" placeholder="••••••••" autocomplete="current-password">
-          </div>
-        </div>
-
-        <button class="hk-btn-primary" id="ap-login-btn">ログイン</button>
-        <div class="hk-toggle">
-          アカウントをお持ちでない方は
-          <button id="ap-to-signup">新規登録</button>
-        </div>
+      <!-- Login type tabs -->
+      <div class="hk-tabs">
+        <button class="hk-tab hk-tab-active"   id="ap-tab-email" onclick="apTab('email')">📧 メール</button>
+        <button class="hk-tab hk-tab-inactive" id="ap-tab-sid"   onclick="apTab('sid')">🎓 学籍番号</button>
       </div>
 
-      <!-- Signup form -->
-      <div id="ap-signup" style="display:none">
-        <div class="hk-fld">
-          <label class="hk-lbl">お名前（表示名）</label>
-          <input class="hk-inp" type="text" id="ap-sname" placeholder="例：山田 太郎">
-        </div>
-        <div class="hk-fld">
-          <label class="hk-lbl">学籍番号 <span style="color:#9ca3af;font-weight:400">（任意）</span></label>
-          <input class="hk-inp" type="text" id="ap-snum" placeholder="例：S001">
-          <p class="hk-hint">入力するとクラス情報が自動で設定されます。</p>
-        </div>
+      <!-- Email login -->
+      <div id="ap-email-fields">
         <div class="hk-fld">
           <label class="hk-lbl">メールアドレス</label>
-          <input class="hk-inp" type="email" id="ap-semail" placeholder="example@school.ed.jp" autocomplete="email">
+          <input class="hk-inp" type="email" id="ap-lemail"
+            placeholder="example@school.ed.jp" autocomplete="email">
         </div>
         <div class="hk-fld">
-          <label class="hk-lbl">パスワード（8文字以上）</label>
-          <input class="hk-inp" type="password" id="ap-spass" placeholder="••••••••" autocomplete="new-password">
+          <label class="hk-lbl">パスワード</label>
+          <input class="hk-inp" type="password" id="ap-lpass"
+            placeholder="••••••••" autocomplete="current-password">
         </div>
-        <button class="hk-btn-primary" id="ap-signup-btn">アカウントを作成</button>
-        <div class="hk-toggle">
-          すでにアカウントをお持ちの方は
-          <button id="ap-to-login">ログイン</button>
+        <button class="hk-forgot" id="ap-forgot">パスワードをお忘れの場合</button>
+      </div>
+
+      <!-- Student ID login -->
+      <div id="ap-sid-fields" style="display:none">
+        <div class="hk-fld">
+          <label class="hk-lbl">学籍番号</label>
+          <input class="hk-inp" type="text" id="ap-lsid"
+            placeholder="例：S001" autocomplete="username">
+        </div>
+        <div class="hk-fld">
+          <label class="hk-lbl">パスワード</label>
+          <input class="hk-inp" type="password" id="ap-lsidpass"
+            placeholder="••••••••" autocomplete="current-password">
         </div>
       </div>
+
+      <button class="hk-btn-primary" id="ap-login-btn">ログイン</button>
     </div>
   `;
 
@@ -142,81 +110,37 @@
   const ok  = msg => { $('ap-ok').textContent  = msg; $('ap-ok').style.display  = 'block'; $('ap-err').style.display = 'none'; };
   const clearMsg = () => { $('ap-err').style.display = 'none'; $('ap-ok').style.display = 'none'; };
 
-  function showForm(form) {
+  let _tab = 'email';
+  window.apTab = function(tab) {
+    _tab = tab;
+    $('ap-tab-email').className = 'hk-tab ' + (tab==='email' ? 'hk-tab-active' : 'hk-tab-inactive');
+    $('ap-tab-sid').className   = 'hk-tab ' + (tab==='sid'   ? 'hk-tab-active' : 'hk-tab-inactive');
+    $('ap-email-fields').style.display = tab === 'email' ? '' : 'none';
+    $('ap-sid-fields').style.display   = tab === 'sid'   ? '' : 'none';
     clearMsg();
-    $('ap-login').style.display  = form === 'login'  ? '' : 'none';
-    $('ap-signup').style.display = form === 'signup' ? '' : 'none';
-    $('ap-title').textContent = form === 'login' ? 'ログイン' : '新規登録';
-    $('ap-sub').textContent   = form === 'login' ? '羽咋市英語教育ポータル' : '無料アカウントを作成します';
-  }
-
-  function setLoading(btnId, loading, label) {
-    const btn = $(btnId);
-    btn.disabled = loading;
-    btn.textContent = loading ? '処理中...' : label;
-  }
-
-  let _apLoginTab = 'email';
-  function apSwitchTab(tab) {
-    _apLoginTab = tab;
-    const emailActive = tab === 'email';
-    $('ap-tab-email').style.background = emailActive ? '#1565C0' : '#fff';
-    $('ap-tab-email').style.color      = emailActive ? '#fff'    : '#374151';
-    $('ap-tab-sid').style.background   = emailActive ? '#fff'    : '#1565C0';
-    $('ap-tab-sid').style.color        = emailActive ? '#374151' : '#fff';
-    $('ap-email-fields').style.display = emailActive ? '' : 'none';
-    $('ap-sid-fields').style.display   = emailActive ? 'none' : '';
-  }
-  window.apSwitchTab = apSwitchTab;
+  };
 
   async function doLogin() {
     clearMsg();
-    if (_apLoginTab === 'sid') {
-      const sid  = ($('ap-lsid')     || {value:''}).value.trim();
-      const pass = ($('ap-lsidpass') || {value:''}).value;
-      if (!sid || !pass) { err('学籍番号とパスワードを入力してください。'); return; }
-      setLoading('ap-login-btn', true, 'ログイン');
-      try {
-        await window.hk.signInWithStudentId(sid, pass);
-        window.location.href = '/site/account/';
-      } catch (e) {
-        err('ログインに失敗しました：学籍番号またはパスワードが正しくありません。');
-      } finally {
-        setLoading('ap-login-btn', false, 'ログイン');
-      }
-    } else {
-      const email = $('ap-lemail').value.trim();
-      const pass  = $('ap-lpass').value;
-      if (!email || !pass) { err('メールアドレスとパスワードを入力してください。'); return; }
-      setLoading('ap-login-btn', true, 'ログイン');
-      try {
-        await window.hk.signIn(email, pass);
-        window.location.href = '/site/account/';
-      } catch (e) {
-        err('ログインに失敗しました：' + (e.message || '入力内容をご確認ください。'));
-      } finally {
-        setLoading('ap-login-btn', false, 'ログイン');
-      }
-    }
-  }
-
-  async function doSignup() {
-    const name   = $('ap-sname').value.trim();
-    const num    = $('ap-snum').value.trim();
-    const email  = $('ap-semail').value.trim();
-    const pass   = $('ap-spass').value;
-    if (!email || !pass) { err('すべての項目を入力してください。'); return; }
-    if (pass.length < 8)  { err('パスワードは8文字以上で設定してください。'); return; }
-    setLoading('ap-signup-btn', true, 'アカウントを作成');
-    clearMsg();
+    const btn = $('ap-login-btn');
+    btn.disabled = true; btn.textContent = '処理中...';
     try {
-      await window.hk.signUp(email, pass, name, num || null);
-      ok('登録が完了しました！ログインしてください。');
-      setTimeout(() => showForm('login'), 3000);
+      if (_tab === 'sid') {
+        const sid  = $('ap-lsid').value.trim();
+        const pass = $('ap-lsidpass').value;
+        if (!sid || !pass) { err('学籍番号とパスワードを入力してください。'); return; }
+        await window.hk.signInWithStudentId(sid, pass);
+      } else {
+        const email = $('ap-lemail').value.trim();
+        const pass  = $('ap-lpass').value;
+        if (!email || !pass) { err('メールアドレスとパスワードを入力してください。'); return; }
+        await window.hk.signIn(email, pass);
+      }
+      window.location.href = '/site/account/';
     } catch (e) {
-      err('登録に失敗しました：' + (e.message || '入力内容をご確認ください。'));
+      err('ログインに失敗しました：' + (e.message || '入力内容をご確認ください。'));
     } finally {
-      setLoading('ap-signup-btn', false, 'アカウントを作成');
+      btn.disabled = false; btn.textContent = 'ログイン';
     }
   }
 
@@ -231,13 +155,8 @@
     }
   }
 
-  $('ap-login-btn').onclick  = doLogin;
-  $('ap-signup-btn').onclick = doSignup;
-  $('ap-to-signup').onclick  = () => showForm('signup');
-  $('ap-to-login').onclick   = () => showForm('login');
-  $('ap-forgot').onclick     = doForgot;
+  $('ap-login-btn').onclick = doLogin;
+  $('ap-forgot').onclick    = doForgot;
   $('ap-lpass').addEventListener('keydown',    e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('ap-lsidpass') && document.getElementById('ap-lsidpass')
-    .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  $('ap-spass').addEventListener('keydown',  e => { if (e.key === 'Enter') doSignup(); });
+  $('ap-lsidpass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 })();
