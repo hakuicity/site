@@ -118,7 +118,7 @@
           </a>
 
           <a class="portal-card portal-card--nh"
-             href="https://hakuicity.github.io/NHApp/" target="_blank" rel="noopener">
+             href="https://hakuicity.github.io/TangoApp/" target="_blank" rel="noopener">
             <div class="portal-card-icon">📘</div>
             <div class="portal-card-title">NH ボキャブラリー</div>
             <div class="portal-card-desc">New Horizon 絵辞典の単語練習。カテゴリー・Unit別に練習できる。</div>
