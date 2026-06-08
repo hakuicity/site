@@ -35,7 +35,7 @@ menu:
       pageRef: /tools
       weight: 4
     - name: ポータル
-      url: /site/portal/
+      url: /portal
       weight: 5
     - name: について
       pageRef: /about
