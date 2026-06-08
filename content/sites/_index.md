@@ -5,23 +5,6 @@ toc: false
 
 英語の学習や授業づくりに役立つウェブサイトを目的別にまとめました。
 
-## ディジタル教科書
-
-{{< cards >}}
-  {{< card link="https://www.lentrance.com/school/login" title="Lentrance" icon="globe-alt" subtitle="LENTRANCEログイン。" >}}
-{{< /cards >}}
-
-{{< cards >}}
-  {{< card link="https://hakuicity.github.io/LetsTry2Utility/" title="Let's Try 2 Utility" icon="globe-alt" subtitle="Lets Try 2のコンパニオンアップ。" >}}
-{{< /cards >}}
-
-
-## 練習ツール
-
-{{< cards >}}
-  {{< card link="https://hakuicity.github.io/EikenApp/" title="EIKENAPP" icon="globe-alt" subtitle="Practice tool for EIKEN levels 5-Pre2." >}}
-{{< /cards >}}
-
 
 ## 総合英語学習
 
