@@ -34,14 +34,17 @@ menu:
     - name: ツール
       pageRef: /tools
       weight: 4
+    - name: ポータル
+      url: /site/portal/
+      weight: 5
     - name: について
       pageRef: /about
-      weight: 5
+      weight: 6
     - name: マイページ
       pageRef: /login
-      weight: 6
-    - name: Search
       weight: 7
+    - name: Search
+      weight: 8
       params:
         type: search
         
