@@ -70,6 +70,8 @@
     .dark .portal-card-badge { background: #1e3a5f; color: #93c5fd; }
     .dark .portal-logout-row { background: #1e293b; border-color: #334155; }
     .dark .portal-logout-btn { background: #1e293b; border-color: #334155; color: #94a3b8; }
+    .portal-card--lentrance::before { background: #f59e0b; }
+    .portal-card--letstry::before   { background: #16a34a; }
     .dark .portal-greeting p { color: #94a3b8; }
   `;
   document.head.appendChild(style);
@@ -128,6 +130,22 @@
             <div class="portal-card-title">マイページ</div>
             <div class="portal-card-desc">自分の成績・練習記録を確認する。</div>
             <span class="portal-card-badge">成績確認</span>
+          </a>
+
+          <a class="portal-card portal-card--lentrance"
+             href="https://lentrance.com/login/lentrance" target="_blank" rel="noopener">
+            <div class="portal-card-icon">🔑</div>
+            <div class="portal-card-title">lentrance</div>
+            <div class="portal-card-desc">デジタル教科書・学習コンテンツのログインページ。</div>
+            <span class="portal-card-badge" style="background:#fef9c3;color:#a16207">lentrance</span>
+          </a>
+
+          <a class="portal-card portal-card--letstry"
+             href="https://hakuicity.github.io/LetsTry2Utility/" target="_blank" rel="noopener">
+            <div class="portal-card-icon">🛠️</div>
+            <div class="portal-card-title">LetsTry2 Utility</div>
+            <div class="portal-card-desc">LetsTry2 関連のユーティリティツール。</div>
+            <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">ユーティリティ</span>
           </a>
 
           ${isAdmin ? `
