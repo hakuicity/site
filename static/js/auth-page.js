@@ -10,7 +10,10 @@
 
   // Redirect if already logged in
   window.hk.getUser().then(user => {
-    if (user) window.location.href = '/site/account/';
+    if (user) {
+      const next = new URLSearchParams(window.location.search).get('next');
+      window.location.href = (next && next.startsWith('/')) ? next : '/site/account/';
+    }
   });
 
   root.innerHTML = `
@@ -134,7 +137,8 @@
         if (!email || !pass) { err('メールアドレスとパスワードを入力してください。'); return; }
         await window.hk.signIn(email, pass);
       }
-      window.location.href = '/site/account/';
+      const next = new URLSearchParams(window.location.search).get('next');
+      window.location.href = (next && next.startsWith('/')) ? next : '/site/account/';
     } catch (e) {
       err('ログインに失敗しました：' + (e.message || '入力内容をご確認ください。'));
     } finally {
