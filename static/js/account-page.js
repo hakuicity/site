@@ -100,6 +100,24 @@
   let _quizResults = [], _catStats = [], _ivScores = [];
   let _activeLevel = '5';
 
+  const NH_CAT_NAMES = {
+    feelings:'気持ち', numbers:'数', colors:'色', shapes:'形',
+    sports:'スポーツ', food:'食べ物', drinks:'飲み物', desserts:'デザート',
+    fruit:'果物', vegetables:'野菜', ingredients:'食材', tastes:'味',
+    animals:'動物', 'sea-animals':'海の生き物', bugs:'虫', nature:'自然',
+    time:'月・曜日・季節', weather:'天気', people:'人', family:'家族',
+    personalities:'性格', actions:'動作', daily:'一日の生活',
+    clothes:'服装', body:'からだ', town:'町', school:'学校',
+    stationery:'文房具', instruments:'楽器', things:'身の回りのもの',
+    events:'行事', descriptions:'様子', jobs:'職業', clubs:'部活動',
+    'g5u1':'5年 Unit 1','g5u2':'5年 Unit 2','g5u3':'5年 Unit 3',
+    'g5u4':'5年 Unit 4','g5u5':'5年 Unit 5','g5u6':'5年 Unit 6',
+    'g5u7':'5年 Unit 7','g5u8':'5年 Unit 8',
+    'g6u1':'6年 Unit 1','g6u2':'6年 Unit 2','g6u3':'6年 Unit 3',
+    'g6u4':'6年 Unit 4','g6u5':'6年 Unit 5','g6u6':'6年 Unit 6',
+    'g6u7':'6年 Unit 7','g6u8':'6年 Unit 8', all:'全Unit'
+  };
+
   async function init() {
     root.innerHTML = '<p style="text-align:center;padding:40px;color:#6b7280">読み込み中...</p>';
     _user = await window.hk.getUser();
@@ -180,8 +198,14 @@
 
         <!-- Recent quiz history -->
         <div class="hk-section">
-          <div class="hk-section-title">📝 最近のクイズ履歴</div>
+          <div class="hk-section-title">📝 英検アプリ — 最近の履歴</div>
           <div id="hk-quiz-history"></div>
+        </div>
+
+        <!-- NH Vocab section -->
+        <div class="hk-section">
+          <div class="hk-section-title">📘 New Horizon — カテゴリー別成績</div>
+          <div id="hk-nh-section"></div>
         </div>
 
         <!-- Interview history -->
@@ -245,6 +269,7 @@
     renderCatBreakdown();
     renderQuizHistory();
     renderIvHistory();
+    renderNhSection();
 
     // Level tab clicks
     root.querySelectorAll('.hk-level-tab').forEach(btn => {
@@ -340,7 +365,53 @@
     </table>`;
   }
 
-  async function saveProfile() {
+  function renderNhSection() {
+    var el = document.getElementById('hk-nh-section');
+    if (!el) return;
+    var nhResults = _quizResults.filter(function(r) { return r.app_id === 'newhorizon'; });
+    if (nhResults.length === 0) {
+      el.innerHTML = '<p style="color:#9ca3af;font-size:13px">まだ記録がありません。</p>';
+      return;
+    }
+    var groups = {};
+    nhResults.forEach(function(r) {
+      var key = r.level || 'other';
+      if (!groups[key]) groups[key] = { correct:0, total:0, sessions:0 };
+      groups[key].correct  += r.correct  || 0;
+      groups[key].total    += r.total    || 0;
+      groups[key].sessions += 1;
+    });
+    var rows = Object.entries(groups).sort(function(a,b){ return b[1].sessions - a[1].sessions; });
+    var tbody = rows.map(function(entry) {
+      var key = entry[0]; var s = entry[1];
+      var pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+      var label = NH_CAT_NAMES[key] || key;
+      var color = pct>=80 ? '#166534' : pct>=60 ? '#d97706' : '#dc2626';
+      return '<tr>' +
+        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-weight:700">' + escHtml(label) + '</td>' +
+        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280">' + s.sessions + '</td>' +
+        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:800;color:' + color + '">' + pct + '%</td>' +
+        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6">' +
+          '<div style="background:#f3f4f6;border-radius:4px;height:8px;overflow:hidden">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px"></div></div>' +
+        '</td>' +
+        '</tr>';
+    }).join('');
+    el.innerHTML =
+      '<div style="overflow-x:auto">' +
+        '<table class="hk-cat-table" style="width:100%;border-collapse:collapse;font-size:13px">' +
+          '<thead><tr>' +
+            '<th style="text-align:left;padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700">カテゴリー</th>' +
+            '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;text-align:center">回数</th>' +
+            '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;text-align:center">正答率</th>' +
+            '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;min-width:100px">スコア</th>' +
+          '</tr></thead>' +
+          '<tbody>' + tbody + '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+    async function saveProfile() {
     const btn = document.getElementById('hk-save-profile');
     btn.disabled = true; btn.textContent = '保存中...';
     try {

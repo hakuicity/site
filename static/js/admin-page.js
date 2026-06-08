@@ -272,79 +272,126 @@
     renderStudentDetail();
   }
 
+  const NH_CAT_NAMES = {
+    feelings:'気持ち', numbers:'数', colors:'色', shapes:'形',
+    sports:'スポーツ', food:'食べ物', drinks:'飲み物', desserts:'デザート',
+    fruit:'果物', vegetables:'野菜', ingredients:'食材', tastes:'味',
+    animals:'動物', 'sea-animals':'海の生き物', bugs:'虫', nature:'自然',
+    time:'月・曜日・季節', weather:'天気', people:'人', family:'家族',
+    personalities:'性格', actions:'動作', daily:'一日の生活',
+    clothes:'服装', body:'からだ', town:'町', school:'学校',
+    stationery:'文房具', instruments:'楽器', things:'身の回りのもの',
+    events:'行事', descriptions:'様子', jobs:'職業', clubs:'部活動',
+    g5u1:'5年 Unit 1',g5u2:'5年 Unit 2',g5u3:'5年 Unit 3',g5u4:'5年 Unit 4',
+    g5u5:'5年 Unit 5',g5u6:'5年 Unit 6',g5u7:'5年 Unit 7',g5u8:'5年 Unit 8',
+    g6u1:'6年 Unit 1',g6u2:'6年 Unit 2',g6u3:'6年 Unit 3',g6u4:'6年 Unit 4',
+    g6u5:'6年 Unit 5',g6u6:'6年 Unit 6',g6u7:'6年 Unit 7',g6u8:'6年 Unit 8', all:'全Unit'
+  };
+
+  // Global tab switch for student detail (called inline from HTML)
+  window.admDetailTab = function(tab) {
+    const eiken = document.getElementById('adm-panel-eiken');
+    const nh    = document.getElementById('adm-panel-nh');
+    const btnE  = document.getElementById('adm-tab-eiken');
+    const btnN  = document.getElementById('adm-tab-nh');
+    if (!eiken || !nh) return;
+    eiken.style.display = tab === 'eiken' ? '' : 'none';
+    nh.style.display    = tab === 'nh'    ? '' : 'none';
+    if (btnE) { btnE.style.background = tab==='eiken'?'#1565C0':'#f9fafb'; btnE.style.color = tab==='eiken'?'#fff':'#374151'; }
+    if (btnN) { btnN.style.background = tab==='nh'?'#1565C0':'#f9fafb';   btnN.style.color = tab==='nh'?'#fff':'#374151'; }
+  };
+
   function renderStudentDetail() {
     const el = document.getElementById('adm-student-detail');
     if (!el) return;
     if (!_selectedStudent) { el.innerHTML = ''; return; }
     const p = _selectedStudent;
-    const quiz = _allQuiz.filter(r => r.user_id === p.id && r.category === 'ALL');
-    const catStats = _allQuiz.filter(r => r.user_id === p.id && r.category !== 'ALL');
-    const iv = _allIv.filter(r => r.user_id === p.id);
+
+    const eikenQuiz = _allQuiz.filter(r => r.user_id === p.id && r.app_id !== 'newhorizon' && r.category === 'ALL');
+    const eikenCat  = _allQuiz.filter(r => r.user_id === p.id && r.app_id !== 'newhorizon' && r.category !== 'ALL');
+    const iv        = _allIv.filter(r => r.user_id === p.id);
+    const totalQ    = eikenQuiz.reduce((s,r) => s+r.total, 0);
+    const totalC    = eikenQuiz.reduce((s,r) => s+r.correct, 0);
 
     const levelRows = ['5','4','3','P'].map(lv => {
-      const lvQuiz = quiz.filter(r => r.level === lv);
-      if (!lvQuiz.length) return '';
-      const totalQ = lvQuiz.reduce((s,r) => s+r.total, 0);
-      const totalC = lvQuiz.reduce((s,r) => s+r.correct, 0);
-      const pct = Math.round(totalC/totalQ*100);
-      const color = pct>=70?'#166534':pct>=50?'#92400e':'#991b1b';
-      return `<tr>
-        <td>${LEVEL_LABEL[lv]}</td>
-        <td>${lvQuiz.length}回</td>
-        <td style="font-weight:700;color:${color}">${pct}%</td>
-      </tr>`;
+      const lvQ = eikenQuiz.filter(r => r.level === lv);
+      if (!lvQ.length) return '';
+      const tQ = lvQ.reduce((s,r) => s+r.total, 0);
+      const tC = lvQ.reduce((s,r) => s+r.correct, 0);
+      const pct = Math.round(tC/tQ*100);
+      const col = pct>=70?'#166534':pct>=50?'#92400e':'#991b1b';
+      return '<tr><td>'+LEVEL_LABEL[lv]+'</td><td>'+lvQ.length+'回</td><td style="font-weight:700;color:'+col+'">'+pct+'%</td></tr>';
     }).join('');
 
-    const catRows = Object.entries(CAT_COLOR).map(([cat,color]) => {
-      const cs = catStats.filter(r => r.category === cat && r.level);
+    const catRows = Object.entries(CAT_COLOR).map(([cat,col]) => {
+      const cs = eikenCat.filter(r => r.category === cat && r.level);
       if (!cs.length) return '';
-      const totalQ = cs.reduce((s,r) => s+r.total, 0);
-      const totalC = cs.reduce((s,r) => s+r.correct, 0);
-      const pct = Math.round(totalC/totalQ*100);
-      return `<tr>
-        <td><span style="font-weight:700;color:${color}">${CAT_LABEL[cat]}</span></td>
-        <td style="font-weight:700">${pct}%</td>
-      </tr>`;
+      const tQ = cs.reduce((s,r) => s+r.total, 0);
+      const tC = cs.reduce((s,r) => s+r.correct, 0);
+      const pct = Math.round(tC/tQ*100);
+      return '<tr><td><span style="font-weight:700;color:'+col+'">'+CAT_LABEL[cat]+'</span></td><td style="font-weight:700">'+pct+'%</td></tr>';
     }).join('');
 
     const ivRows = iv.slice(0,8).map(r => {
-      const color = r.avg_score>=70?'#166534':r.avg_score>=50?'#92400e':'#991b1b';
-      return `<tr>
-        <td>${LEVEL_LABEL[r.level]||r.level}</td>
-        <td>${escHtml(r.topic)}</td>
-        <td style="font-weight:700;color:${color}">${r.avg_score}%</td>
-      </tr>`;
+      const col = r.avg_score>=70?'#166534':r.avg_score>=50?'#92400e':'#991b1b';
+      return '<tr><td>'+(LEVEL_LABEL[r.level]||r.level)+'</td><td>'+escHtml(r.topic)+'</td><td style="font-weight:700;color:'+col+'">'+r.avg_score+'%</td></tr>';
     }).join('');
 
-    const totalQ = quiz.reduce((s,r) => s+r.total, 0);
-    const totalC = quiz.reduce((s,r) => s+r.correct, 0);
+    const nhQuiz = _allQuiz.filter(r => r.user_id === p.id && r.app_id === 'newhorizon');
+    const nhGroups = {};
+    nhQuiz.forEach(r => {
+      const key = r.level || 'other';
+      if (!nhGroups[key]) nhGroups[key] = { correct:0, total:0, sessions:0 };
+      nhGroups[key].correct  += r.correct  || 0;
+      nhGroups[key].total    += r.total    || 0;
+      nhGroups[key].sessions += 1;
+    });
+    const nhRows = Object.entries(nhGroups)
+      .sort((a,b) => b[1].sessions - a[1].sessions)
+      .map(([key, s]) => {
+        const pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+        const label = NH_CAT_NAMES[key] || key;
+        const col = pct>=80?'#166534':pct>=60?'#92400e':'#991b1b';
+        return '<tr>' +
+          '<td style="font-weight:700">'+escHtml(label)+'</td>' +
+          '<td style="text-align:center;color:#6b7280">'+s.sessions+'</td>' +
+          '<td style="font-weight:800;color:'+col+';text-align:center">'+pct+'%</td>' +
+          '<td style="min-width:80px"><div style="background:#f3f4f6;border-radius:3px;height:6px"><div style="width:'+pct+'%;height:100%;background:'+col+';border-radius:3px"></div></div></td>' +
+          '</tr>';
+      }).join('');
 
-    el.innerHTML = `
-      <div class="adm-detail">
-        <button class="adm-close-detail" id="adm-close-detail">×</button>
-        <h3>${escHtml(p.display_name||'—')}</h3>
-        <p class="adm-detail-sub">${escHtml(p.class_name||'')} ${escHtml(p.school||'')} · 登録日：${new Date(p.created_at).toLocaleDateString('ja-JP')}</p>
-        <div style="display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap">
-          <div><strong style="font-size:20px;color:#1565C0">${quiz.length}</strong><span style="color:#6b7280;font-size:12px"> セッション</span></div>
-          <div><strong style="font-size:20px;color:#2E7D32">${totalQ}</strong><span style="color:#6b7280;font-size:12px"> 回答</span></div>
-          <div><strong style="font-size:20px;color:#E65100">${totalQ>0?Math.round(totalC/totalQ*100):0}%</strong><span style="color:#6b7280;font-size:12px"> 全体正答率</span></div>
-        </div>
-        <div class="adm-detail-grid">
-          <div class="adm-detail-col">
-            <h4>レベル別</h4>
-            ${levelRows ? `<table class="adm-mini-table"><thead><tr><th>レベル</th><th>回数</th><th>正答率</th></tr></thead><tbody>${levelRows}</tbody></table>` : '<p style="color:#9ca3af;font-size:12px">データなし</p>'}
-          </div>
-          <div class="adm-detail-col">
-            <h4>カテゴリー別</h4>
-            ${catRows ? `<table class="adm-mini-table"><thead><tr><th>カテゴリー</th><th>正答率</th></tr></thead><tbody>${catRows}</tbody></table>` : '<p style="color:#9ca3af;font-size:12px">データなし</p>'}
-          </div>
-          <div class="adm-detail-col">
-            <h4>面接練習</h4>
-            ${ivRows ? `<table class="adm-mini-table"><thead><tr><th>レベル</th><th>トピック</th><th>スコア</th></tr></thead><tbody>${ivRows}</tbody></table>` : '<p style="color:#9ca3af;font-size:12px">データなし</p>'}
-          </div>
-        </div>
-      </div>`;
+    el.innerHTML =
+      '<div class="adm-detail">' +
+        '<button class="adm-close-detail" id="adm-close-detail">×</button>' +
+        '<h3>'+escHtml(p.display_name||'—')+'</h3>' +
+        '<p class="adm-detail-sub">'+escHtml(p.class_name||'')+' '+escHtml(p.school||'')+' · 登録日：'+new Date(p.created_at).toLocaleDateString('ja-JP')+'</p>' +
+        '<div style="display:flex;gap:0;border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px">' +
+          '<button id="adm-tab-eiken" data-adm-tab="eiken" style="flex:1;padding:8px;background:#1565C0;color:#fff;border:none;font-size:12px;font-weight:800;cursor:pointer">🎓 英検アプリ</button>' +
+          '<button id="adm-tab-nh" data-adm-tab="nh" style="flex:1;padding:8px;background:#f9fafb;color:#374151;border:none;border-left:1.5px solid #e5e7eb;font-size:12px;font-weight:800;cursor:pointer">📘 New Horizon</button>' +
+        '</div>' +
+        '<div id="adm-panel-eiken">' +
+          '<div style="display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap">' +
+            '<div><strong style="font-size:18px;color:#1565C0">'+eikenQuiz.length+'</strong><span style="color:#6b7280;font-size:12px"> セッション</span></div>' +
+            '<div><strong style="font-size:18px;color:#2E7D32">'+totalQ+'</strong><span style="color:#6b7280;font-size:12px"> 回答</span></div>' +
+            '<div><strong style="font-size:18px;color:#E65100">'+(totalQ>0?Math.round(totalC/totalQ*100):0)+'%</strong><span style="color:#6b7280;font-size:12px"> 正答率</span></div>' +
+          '</div>' +
+          '<div class="adm-detail-grid">' +
+            '<div class="adm-detail-col"><h4>レベル別</h4>'+(levelRows?'<table class="adm-mini-table"><thead><tr><th>レベル</th><th>回数</th><th>正答率</th></tr></thead><tbody>'+levelRows+'</tbody></table>':'<p style="color:#9ca3af;font-size:12px">データなし</p>')+'</div>' +
+            '<div class="adm-detail-col"><h4>カテゴリー別</h4>'+(catRows?'<table class="adm-mini-table"><thead><tr><th>カテゴリー</th><th>正答率</th></tr></thead><tbody>'+catRows+'</tbody></table>':'<p style="color:#9ca3af;font-size:12px">データなし</p>')+'</div>' +
+            '<div class="adm-detail-col"><h4>面接練習</h4>'+(ivRows?'<table class="adm-mini-table"><thead><tr><th>レベル</th><th>トピック</th><th>スコア</th></tr></thead><tbody>'+ivRows+'</tbody></table>':'<p style="color:#9ca3af;font-size:12px">データなし</p>')+'</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="adm-panel-nh" style="display:none">' +
+          (nhRows ?
+            '<div style="margin-bottom:12px;font-size:13px;color:#6b7280"><strong style="color:#1565C0">'+nhQuiz.length+'</strong> セッション合計</div>' +
+            '<table class="adm-mini-table" style="width:100%"><thead><tr><th>カテゴリー / Unit</th><th style="text-align:center">回数</th><th style="text-align:center">正答率</th><th>スコア</th></tr></thead><tbody>'+nhRows+'</tbody></table>'
+            : '<p style="color:#9ca3af;font-size:12px">New Horizonのデータはまだありません。</p>') +
+        '</div>' +
+      '</div>';
 
+    document.querySelectorAll('[data-adm-tab]').forEach(function(btn) {
+      btn.onclick = function() { admDetailTab(btn.getAttribute('data-adm-tab')); };
+    });
     document.getElementById('adm-close-detail').onclick = () => {
       _selectedStudent = null;
       renderStudentTable();

@@ -90,12 +90,12 @@
     }
 
     // ── EikenApp sync ───────────────────────────────────────────────────────
-    async function hkSyncQuizResult({ level, setId, category, correct, total }) {
+    async function hkSyncQuizResult({ level, setId, category, correct, total, app_id }) {
       const user = await hkGetUser();
       if (!user) return;
       const scorePct = total > 0 ? Math.round((correct / total) * 100) : 0;
       const { error } = await hkClient.from('quiz_results').insert({
-        user_id: user.id, app_id: 'eiken', level, set_id: setId,
+        user_id: user.id, app_id: app_id || 'eiken', level, set_id: setId,
         category, correct, total, score_pct: scorePct
       });
       if (error) console.warn('[HakuiSync] quiz_results error:', error.message);
