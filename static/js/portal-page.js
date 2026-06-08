@@ -8,7 +8,7 @@
   const root = document.getElementById('hk-portal-page');
   if (!root) return;
 
-  const LOGIN_URL = '/site/login/?next=/portal/';
+  const LOGIN_URL = '/site/login/?next=/site/portal/';
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const style = document.createElement('style');
