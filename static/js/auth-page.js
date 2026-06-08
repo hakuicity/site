@@ -20,13 +20,11 @@
         border-radius: 16px; padding: 36px 32px;
         box-shadow: 0 4px 24px rgba(0,0,0,.09); border: 1px solid #e5e7eb;
       }
-      @media (prefers-color-scheme: dark) {
-        .hk-page-card { background: #1e293b; border-color: #334155; }
-        .hk-page-card h1 { color: #f1f5f9; }
-        .hk-lbl { color: #94a3b8 !important; }
-        .hk-inp { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
-        .hk-sub { color: #94a3b8 !important; }
-      }
+      .dark .hk-page-card { background: #1e293b; border-color: #334155; }
+      .dark .hk-page-card h1 { color: #f1f5f9; }
+      .dark .hk-lbl { color: #94a3b8 !important; }
+      .dark .hk-inp { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
+      .dark .hk-sub { color: #94a3b8 !important; }
       .hk-page-card h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #111827; }
       .hk-sub  { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
       .hk-fld  { margin-bottom: 14px; }
