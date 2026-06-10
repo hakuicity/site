@@ -987,10 +987,13 @@
         var school = _roster.length ? _roster[0].school : undefined;
         var data = await callManageStudent({ action:'bulk-reset-password', class_name:cls, new_password:pass, school:school });
         _lastResults = (data.results || []).map(function(r){ return Object.assign({}, r, { password: pass }); });
-        var ok = _lastResults.filter(function(r){ return r.ok; }).length;
-        var ng = _lastResults.filter(function(r){ return !r.ok; }).length;
-        res.innerHTML = '<span style="color:#2E7D32;font-weight:800">✅ ' + ok + '名成功</span>' +
-          (ng ? ' <span style="color:#dc2626">/ ❌ ' + ng + '名失敗</span>' : '') +
+        var created = data.created || 0;
+        var updated = data.updated || 0;
+        var failed  = data.failed  || 0;
+        res.innerHTML =
+          (created ? '<span style="color:#7c3aed;font-weight:800">🆕 ' + created + '名 新規作成</span>&nbsp; ' : '') +
+          (updated ? '<span style="color:#2E7D32;font-weight:800">✅ ' + updated + '名 パスワード更新</span>' : '') +
+          (failed  ? ' &nbsp;<span style="color:#dc2626">❌ ' + failed + '名 失敗</span>' : '') +
           '<br><small style="color:#9ca3af">CSV出力ボタンで配布用一覧をダウンロードできます。</small>';
       } catch(e) {
         res.innerHTML = '<span style="color:#dc2626">エラー: ' + esc(e.message) + '</span>';
