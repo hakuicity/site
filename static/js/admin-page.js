@@ -489,7 +489,7 @@
             ? '<button class="edit-btn" data-uid="' + p.id + '" ' +
               'style="padding:4px 10px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#374151;cursor:pointer;margin-right:4px">✎ 編集</button>'
             : '') +
-          (isAdmin && !isProtected
+          (isAdmin
             ? '<button class="assign-btn" data-uid="' + p.id + '" ' +
               'style="padding:4px 10px;border:1.5px solid #a7f3d0;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#065f46;cursor:pointer;margin-right:4px">担当設定</button>'
             : '') +
@@ -504,11 +504,7 @@
 
     el.innerHTML =
       '<div class="adm-section">' +
-      '<div style="font-size:11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:6px 10px;margin-bottom:10px;color:#0369a1">' +
-      'ロール: <strong>' + (_profile ? _profile.role : 'なし') + '</strong> &nbsp;·&nbsp; ' +
-      '管理者モード: <strong>' + (isAdmin ? 'はい' : 'いいえ') + '</strong> &nbsp;·&nbsp; ' +
-      'スタッフ数: <strong>' + staffList.length + '</strong>' +
-      '</div>' +
+
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">' +
       '<div class="adm-section-title" style="margin:0">👥 スタッフ管理</div>' +
       (isAdmin
@@ -643,10 +639,7 @@
       btn.disabled = true; btn.textContent = '保存中...';
       try {
         // Update profile fields
-        const { error: pErr } = await window.hk._client
-          .from('profiles').update({ display_name: name, role })
-          .eq('id', p.id);
-        if (pErr) throw new Error(pErr.message);
+        await window.hk.updateProfile(p.id, { display_name: name, role });
 
         // Reset password if provided
         if (pass) {
@@ -753,11 +746,11 @@
       errEl.style.display = 'none';
 
       try {
-        const { error } = await window.hk._client
-          .from('profiles')
-          .update({ school: school||null, subject, assigned_classes: assignedClasses.length ? assignedClasses : null })
-          .eq('id', p.id);
-        if (error) throw new Error(error.message);
+        await window.hk.updateProfile(p.id, {
+          school:           school || null,
+          subject,
+          assigned_classes: assignedClasses.length ? assignedClasses : null,
+        });
 
         // Update local cache
         const lp = _profiles.find(x=>x.id===p.id);
