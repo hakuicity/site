@@ -447,55 +447,191 @@
 
   // ── Users tab ──────────────────────────────────────────────────────────────
   function renderUsersTab(el) {
-    const rows = _profiles.map(p => {
-      const roleClass = `adm-role-${p.role}`;
-      const roleLabel = p.role === 'admin' ? '管理者' : p.role === 'teacher' ? '教員' : '生徒';
-      return `<tr>
-        <td>${escHtml(p.display_name||'—')}</td>
-        <td>${escHtml(p.class_name||'—')}</td>
-        <td>${escHtml(p.school||'—')}</td>
-        <td><span class="adm-role-badge ${roleClass}">${roleLabel}</span></td>
-        <td>${new Date(p.created_at).toLocaleDateString('ja-JP')}</td>
-      </tr>`;
+    const isAdmin   = _profile && _profile.role === 'admin';
+    const staffList = _profiles.filter(p => p.role !== 'student');
+
+    const ROLE_LABELS = { admin:'管理者', teacher:'教員', moderator:'モデレーター' };
+    const ROLE_COLORS = { admin:'#a16207', teacher:'#15803d', moderator:'#6d28d9' };
+
+    const rows = staffList.map(p => {
+      const isMe        = p.id === (_profile && _profile.id);
+      const isProtected = p.role === 'admin';
+      const label       = ROLE_LABELS[p.role] || p.role;
+      const color       = ROLE_COLORS[p.role] || '#374151';
+      return '<tr>' +
+        '<td><strong>' + escHtml(p.display_name||'—') + '</strong>' +
+          (isMe ? ' <span style="font-size:10px;color:#9ca3af">(自分)</span>' : '') + '</td>' +
+        '<td style="font-size:12px;color:#6b7280">' + escHtml(p.school||'—') + '</td>' +
+        '<td>' +
+          (isAdmin && !isProtected && !isMe
+            ? '<select class="role-select" data-uid="' + p.id + '" data-name="' + escHtml(p.display_name||'') + '" ' +
+              'style="padding:4px 8px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:700;color:' + color + '">' +
+              ['teacher','moderator'].map(r =>
+                '<option value="' + r + '"' + (r === p.role ? ' selected' : '') + '>' + ROLE_LABELS[r] + '</option>'
+              ).join('') +
+              '</select>'
+            : '<span style="font-weight:700;color:' + color + '">' + label + '</span>') +
+        '</td>' +
+        '<td>' +
+          (isAdmin && !isProtected && !isMe
+            ? '<button class="revoke-btn" data-uid="' + p.id + '" data-name="' + escHtml(p.display_name||'') + '" ' +
+              'style="padding:4px 10px;border:1.5px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#dc2626;cursor:pointer">削除</button>'
+            : '') +
+        '</td>' +
+        '<td style="font-size:12px;color:#9ca3af">' + new Date(p.created_at).toLocaleDateString('ja-JP') + '</td>' +
+        '</tr>';
     }).join('');
 
-    el.innerHTML = `
-      <div class="adm-section">
-        <div class="adm-section-title">全ユーザー一覧</div>
-        <p style="font-size:13px;color:#6b7280;margin-bottom:12px">
-          ロール変更はSupabase管理画面の <code>profiles</code> テーブルから行ってください。
-        </p>
-        <table class="adm-table">
-          <thead><tr><th>名前</th><th>クラス</th><th>学校</th><th>ロール</th><th>登録日</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
+    el.innerHTML =
+      '<div class="adm-section">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">' +
+      '<div class="adm-section-title" style="margin:0">👥 スタッフ管理</div>' +
+      (isAdmin
+        ? '<button id="add-staff-btn" style="padding:8px 16px;background:#1565C0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">＋ スタッフを追加</button>'
+        : '') +
+      '</div>' +
+      (isAdmin
+        ? '<p style="font-size:12px;color:#6b7280;margin-bottom:12px">ロールの変更と新規スタッフの追加ができます。管理者アカウントはここでは変更できません。</p>'
+        : '<p style="font-size:12px;color:#6b7280;margin-bottom:12px">スタッフ一覧です（閲覧のみ）。</p>') +
+      '<table class="adm-table"><thead><tr>' +
+      '<th>名前</th><th>学校</th><th>ロール</th><th></th><th>登録日</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      '</div>';
+
+    // Role change dropdowns
+    el.querySelectorAll('.role-select').forEach(sel => {
+      sel.onchange = async function() {
+        const uid  = this.dataset.uid;
+        const name = this.dataset.name;
+        const role = this.value;
+        if (!confirm('「' + name + '」のロールを「' + ROLE_LABELS[role] + '」に変更しますか？')) {
+          // Revert visually
+          const p = _profiles.find(x => x.id === uid);
+          if (p) this.value = p.role;
+          return;
+        }
+        try {
+          await callManageStudent({ action: 'set-role', user_id: uid, new_role: role });
+          const p = _profiles.find(x => x.id === uid);
+          if (p) p.role = role;
+          this.style.color = ROLE_COLORS[role] || '#374151';
+        } catch(e) { alert('エラー: ' + e.message); this.value = (_profiles.find(x=>x.id===uid)||{}).role || 'teacher'; }
+      };
+    });
+
+    // Revoke buttons
+    el.querySelectorAll('.revoke-btn').forEach(btn => {
+      btn.onclick = async function() {
+        const uid  = this.dataset.uid;
+        const name = this.dataset.name;
+        if (!confirm('「' + name + '」のスタッフアクセスを削除し、アカウントを無効化しますか？\nこの操作は取り消せません。')) return;
+        try {
+          await callManageStudent({ action: 'revoke-staff', user_id: uid });
+          _profiles = _profiles.filter(p => p.id !== uid);
+          renderRoot();
+        } catch(e) { alert('エラー: ' + e.message); }
+      };
+    });
+
+    // Add staff button
+    if (isAdmin && document.getElementById('add-staff-btn')) {
+      document.getElementById('add-staff-btn').onclick = () => showAddStaffModal();
+    }
+  }
+
+  function showAddStaffModal() {
+    const existing = document.getElementById('add-staff-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'add-staff-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(4px)';
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:16px;padding:24px 22px;width:100%;max-width:400px;box-shadow:0 12px 40px rgba(0,0,0,.2)">' +
+      '<h2 style="font-size:18px;font-weight:900;margin-bottom:16px">👥 スタッフを追加</h2>' +
+      '<div style="display:flex;flex-direction:column;gap:11px">' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">表示名 *</label>' +
+      '<input type="text" id="ns-name" placeholder="例：鈴木 花子先生" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px"></div>' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">メールアドレス *</label>' +
+      '<input type="email" id="ns-email" placeholder="teacher@school.ed.jp" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px"></div>' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">ロール *</label>' +
+      '<select id="ns-role" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px">' +
+      '<option value="teacher">教員</option>' +
+      '<option value="moderator">モデレーター</option>' +
+      '</select></div>' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">初期パスワード *</label>' +
+      '<div style="display:flex;gap:6px">' +
+      '<input type="text" id="ns-pass" placeholder="8文字以上" style="flex:1;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px">' +
+      '<button id="ns-gen" style="padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;background:#f9fafb;cursor:pointer">🎲</button>' +
+      '</div></div>' +
+      '</div>' +
+      '<div id="ns-err" style="margin-top:10px;padding:8px 12px;background:#fff5f5;border:1px solid #fca5a5;color:#dc2626;border-radius:7px;font-size:12px;display:none"></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">' +
+      '<button id="ns-cancel" style="padding:9px 18px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;font-size:13px;font-weight:700;cursor:pointer">キャンセル</button>' +
+      '<button id="ns-save" style="padding:9px 18px;background:#1565C0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">追加する</button>' +
+      '</div></div>';
+
+    document.body.appendChild(modal);
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    document.getElementById('ns-cancel').onclick = () => modal.remove();
+
+    document.getElementById('ns-gen').onclick = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+      let pw = '';
+      for (let i = 0; i < 10; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+      document.getElementById('ns-pass').value = pw;
+    };
+
+    document.getElementById('ns-save').onclick = async () => {
+      const name  = document.getElementById('ns-name').value.trim();
+      const email = document.getElementById('ns-email').value.trim();
+      const role  = document.getElementById('ns-role').value;
+      const pass  = document.getElementById('ns-pass').value;
+      const errEl = document.getElementById('ns-err');
+      errEl.style.display = 'none';
+
+      if (!name || !email || !pass) { errEl.textContent = 'すべての項目を入力してください。'; errEl.style.display = ''; return; }
+      if (pass.length < 8) { errEl.textContent = 'パスワードは8文字以上にしてください。'; errEl.style.display = ''; return; }
+
+      const btn = document.getElementById('ns-save');
+      btn.disabled = true; btn.textContent = '処理中...';
+      try {
+        const data = await callManageStudent({ action:'create-staff', display_name:name, email, role, password:pass });
+        modal.remove();
+        // Add to local profiles list so it shows immediately
+        _profiles.push({ id:data.user_id, display_name:name, role, school:null, created_at:new Date().toISOString() });
+        renderRoot();
+      } catch(e) {
+        errEl.textContent = 'エラー: ' + e.message;
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = '追加する';
+      }
+    };
+  }
+
+  async function callManageStudent(body) {
+    const EDGE_URL = 'https://rfntsrcguhldybddfgcl.supabase.co/functions/v1/manage-student';
+    const session  = await window.hk.getSession();
+    const token    = session && session.access_token;
+    const res = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
   }
 
   // ── Password management ──────────────────────────────────────────────────
   async function resetStudentPassword(student) {
-    const newPass = prompt(
-      `「${student.display_name}」の新しいパスワードを入力してください（6文字以上）:`,
-      ''
-    );
+    const newPass = prompt('「' + student.display_name + '」の新しいパスワードを入力してください（6文字以上）:', '');
     if (!newPass) return;
     if (newPass.length < 6) { alert('パスワードは6文字以上にしてください。'); return; }
-
     try {
-      const EDGE_URL = 'https://rfntsrcguhldybddfgcl.supabase.co/functions/v1/manage-student';
-      const session = await window.hk.getSession();
-      const token   = session?.access_token;
-      const res = await fetch(EDGE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
-        body: JSON.stringify({ action:'reset-password', user_id: student.id, new_password: newPass })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Reset failed');
-      alert(`✅ 「${student.display_name}」のパスワードをリセットしました。`);
-    } catch(e) {
-      alert('エラー: ' + e.message);
-    }
+      await callManageStudent({ action:'reset-password', user_id: student.id, new_password: newPass });
+      alert('✅ 「' + student.display_name + '」のパスワードをリセットしました。');
+    } catch(e) { alert('エラー: ' + e.message); }
   }
 
   function escHtml(s) {
