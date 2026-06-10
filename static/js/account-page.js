@@ -214,8 +214,8 @@
           <div id="hk-iv-history"></div>
         </div>
 
-        <!-- Admin/teacher/moderator links -->
-        ${(_profile && ['admin','teacher','moderator'].includes(_profile.role)) ? `
+        <!-- Admin/teacher links -->
+        ${(_profile && ['admin','teacher'].includes(_profile.role)) ? `
         <div class="hk-section">
           <div class="hk-section-title">🔐 管理者メニュー</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
