@@ -96,7 +96,7 @@
   function render(user, profile) {
     const name    = (profile && profile.display_name) ? profile.display_name : user.email;
     const isAdmin    = profile && ['admin', 'teacher'].includes(profile.role);
-    const isElevated = profile && ['admin', 'teacher', 'moderator'].includes(profile.role);
+    
 
     // Get the school year from class_name e.g. "5年生" → "5年生"
     const grade = (profile && profile.class_name) ? profile.class_name : '';
@@ -150,7 +150,7 @@
             <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">ユーティリティ</span>
           </a>
 
-          ${isElevated ? `
+          ${isAdmin ? `
           <a class="portal-card portal-card--gradebook" href="/site/gradebook/">
             <div class="portal-card-icon">📒</div>
             <div class="portal-card-title">グレードブック</div>
