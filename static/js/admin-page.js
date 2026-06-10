@@ -107,7 +107,7 @@
       return;
     }
     _profile = await window.hk.getProfile(_user.id);
-    if (!_profile || !['admin','teacher'].includes(_profile.role)) {
+    if (!_profile || !['admin','teacher','moderator'].includes(_profile.role)) {
       root.innerHTML = `<div style="text-align:center;padding:48px">
         <p style="font-size:18px;margin-bottom:8px">⛔ アクセス権がありません</p>
         <p style="color:#6b7280;font-size:14px">このページは管理者・教員のみアクセス可能です。</p>
@@ -387,6 +387,13 @@
             '<table class="adm-mini-table" style="width:100%"><thead><tr><th>カテゴリー / Unit</th><th style="text-align:center">回数</th><th style="text-align:center">正答率</th><th>スコア</th></tr></thead><tbody>'+nhRows+'</tbody></table>'
             : '<p style="color:#9ca3af;font-size:12px">New Horizonのデータはまだありません。</p>') +
         '</div>' +
+        ((_profile && ['admin','teacher'].includes(_profile.role)) ?
+          '<div style="margin-top:18px;padding-top:14px;border-top:1.5px solid #f3f4f6">' +
+          '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:8px">🔐 アカウント管理</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          '<button id="adm-reset-pw-btn" style="padding:7px 14px;border-radius:7px;border:1.5px solid #fca5a5;background:#fff;color:#dc2626;font-size:12px;font-weight:800;cursor:pointer">🔑 パスワードをリセット</button>' +
+          '</div></div>'
+          : '') +
       '</div>';
 
     document.querySelectorAll('[data-adm-tab]').forEach(function(btn) {
@@ -396,6 +403,12 @@
       _selectedStudent = null;
       renderStudentTable();
     };
+
+    // Password reset button (admin/teacher only)
+    const pwBtn = document.getElementById('adm-reset-pw-btn');
+    if (pwBtn) {
+      pwBtn.onclick = () => resetStudentPassword(p);
+    }
   }
 
   // ── Class tab ──────────────────────────────────────────────────────────────
@@ -457,6 +470,32 @@
           <tbody>${rows}</tbody>
         </table>
       </div>`;
+  }
+
+  // ── Password management ──────────────────────────────────────────────────
+  async function resetStudentPassword(student) {
+    const newPass = prompt(
+      `「${student.display_name}」の新しいパスワードを入力してください（6文字以上）:`,
+      ''
+    );
+    if (!newPass) return;
+    if (newPass.length < 6) { alert('パスワードは6文字以上にしてください。'); return; }
+
+    try {
+      const EDGE_URL = 'https://rfntsrcguhldybddfgcl.supabase.co/functions/v1/manage-student';
+      const session = await window.hk.getSession();
+      const token   = session?.access_token;
+      const res = await fetch(EDGE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+        body: JSON.stringify({ action:'reset-password', user_id: student.id, new_password: newPass })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Reset failed');
+      alert(`✅ 「${student.display_name}」のパスワードをリセットしました。`);
+    } catch(e) {
+      alert('エラー: ' + e.message);
+    }
   }
 
   function escHtml(s) {

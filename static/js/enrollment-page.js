@@ -201,6 +201,7 @@
           <button class="enr-tab${_activeTab==='import'?' active':''}" data-tab="import">📥 一括登録</button>
           <button class="enr-tab${_activeTab==='roster'?' active':''}" data-tab="roster">📋 名簿一覧</button>
           <button class="enr-tab${_activeTab==='classes'?' active':''}" data-tab="classes">🏫 クラス管理</button>
+          <button class="enr-tab${_activeTab==='passwords'?' active':''}" data-tab="passwords">🔑 パスワード管理</button>
         </div>
 
         <div id="enr-content"></div>
@@ -220,9 +221,10 @@
   function renderTab() {
     const el = document.getElementById('enr-content');
     if (!el) return;
-    if (_activeTab === 'import')  renderImportTab(el);
-    else if (_activeTab === 'roster')  renderRosterTab(el);
-    else if (_activeTab === 'classes') renderClassesTab(el);
+    if (_activeTab === 'import')    renderImportTab(el);
+    else if (_activeTab === 'roster')    renderRosterTab(el);
+    else if (_activeTab === 'classes')   renderClassesTab(el);
+    else if (_activeTab === 'passwords') renderPasswordTab(el);
   }
 
   // ════════════════════════════════════════════════════════════════════════
@@ -582,7 +584,11 @@
 
   function rosterRow(r, classes) {
     return `<tr data-rid="${r.id}">
-      <td style="font-family:monospace;font-size:12px">${esc(r.student_number)}</td>
+      <td style="font-family:monospace;font-size:12px">
+        ${esc(r.student_number)}
+        ${r.id ? `<button onclick="editStudentNumber('${r.id}','${esc(r.student_number||'')}')"
+          style="margin-left:6px;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af" title="学籍番号を変更">✎</button>` : ''}
+      </td>
       <td><strong>${esc(r.display_name)}</strong></td>
       <td>
         <div id="cls-display-${r.id}" style="display:flex;align-items:center;gap:6px">
@@ -819,7 +825,11 @@
           ${students.map(r => `
             <tr>
               <td><input type="checkbox" class="enr-scb" data-rid="${r.id}"></td>
-              <td style="font-family:monospace;font-size:12px">${esc(r.student_number)}</td>
+              <td style="font-family:monospace;font-size:12px">
+        ${esc(r.student_number)}
+        ${r.id ? `<button onclick="editStudentNumber('${r.id}','${esc(r.student_number||'')}')"
+          style="margin-left:6px;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af" title="学籍番号を変更">✎</button>` : ''}
+      </td>
               <td>${esc(r.display_name)}</td>
               <td>
                 <span class="enr-badge ${r.linked_user_id ? 'enr-badge-linked' : 'enr-badge-pending'}">
@@ -898,4 +908,108 @@
   }
 
   init();
+  // ── Password management tab ───────────────────────────────────────────────
+  const EDGE_BASE = 'https://rfntsrcguhldybddfgcl.supabase.co/functions/v1';
+
+  async function getToken() {
+    const session = await window.hk.getSession();
+    return session?.access_token || '';
+  }
+
+  async function callManageStudent(body) {
+    const token = await getToken();
+    const res   = await fetch(EDGE_BASE + '/manage-student', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  window.editStudentNumber = async function(rosterId, oldNumber) {
+    const newNum = prompt('新しい学籍番号（現在：' + oldNumber + '）:', oldNumber);
+    if (!newNum || newNum === oldNumber) return;
+    try {
+      await callManageStudent({ action:'change-student-number', roster_id:rosterId, old_number:oldNumber, new_number:newNum.trim() });
+      alert('✅ 学籍番号を ' + newNum + ' に変更しました。');
+      renderRoot();
+    } catch(e) { alert('エラー: ' + e.message); }
+  };
+
+  function renderPasswordTab(el) {
+    const classes = [...new Set(_roster.map(function(r){ return r.class_name; }).filter(Boolean))].sort();
+    el.innerHTML =
+      '<div style="max-width:600px">' +
+      '<p style="font-size:13px;color:#6b7280;margin-bottom:20px">生徒のパスワードをクラス単位でリセットできます。CSVファイルで配布用一覧も出力できます。</p>' +
+      '<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px">' +
+      '<h3 style="font-size:14px;font-weight:800;margin-bottom:14px">🏫 クラス一括リセット</h3>' +
+      '<div style="display:flex;flex-direction:column;gap:10px">' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">対象クラス</label>' +
+      '<select id="pw-class" style="padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;width:100%;max-width:280px">' +
+      '<option value="">— クラスを選択 —</option>' +
+      classes.map(function(c){ return '<option value="'+esc(c)+'">'+esc(c)+'</option>'; }).join('') +
+      '</select></div>' +
+      '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">新しいパスワード</label>' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<input type="text" id="pw-new" placeholder="例：Mizuho2025" maxlength="30" style="padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;width:220px">' +
+      '<button id="pw-gen-btn" style="padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:12px;font-weight:700;background:#f9fafb;cursor:pointer">🎲 ランダム生成</button>' +
+      '</div><p style="font-size:11px;color:#9ca3af;margin-top:4px">6文字以上。</p></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">' +
+      '<button id="pw-bulk-btn" style="padding:9px 20px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">⚠️ 一括リセット実行</button>' +
+      '</div><div id="pw-result" style="font-size:13px;color:#6b7280;margin-top:8px"></div></div></div>' +
+      '<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:20px">' +
+      '<h3 style="font-size:14px;font-weight:800;margin-bottom:8px">📄 配布用CSV出力</h3>' +
+      '<button id="pw-csv-btn" style="padding:8px 16px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:700;background:#f9fafb;cursor:pointer">⬇️ CSV ダウンロード</button>' +
+      '</div></div>';
+
+    var _lastResults = [];
+
+    document.getElementById('pw-gen-btn').onclick = function() {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      var pw = '';
+      for (var i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+      document.getElementById('pw-new').value = pw;
+    };
+
+    document.getElementById('pw-bulk-btn').onclick = async function() {
+      var cls  = document.getElementById('pw-class').value;
+      var pass = document.getElementById('pw-new').value.trim();
+      var res  = document.getElementById('pw-result');
+      if (!cls)           { res.textContent = '⚠️ クラスを選択してください。'; return; }
+      if (pass.length < 6){ res.textContent = '⚠️ パスワードは6文字以上にしてください。'; return; }
+      if (!confirm('「' + cls + '」の全生徒のパスワードを「' + pass + '」にリセットしますか？')) return;
+      var btn = document.getElementById('pw-bulk-btn');
+      btn.disabled = true; btn.textContent = '処理中...';
+      res.textContent = '';
+      try {
+        var school = _roster.length ? _roster[0].school : undefined;
+        var data = await callManageStudent({ action:'bulk-reset-password', class_name:cls, new_password:pass, school:school });
+        _lastResults = (data.results || []).map(function(r){ return Object.assign({}, r, { password: pass }); });
+        var ok = _lastResults.filter(function(r){ return r.ok; }).length;
+        var ng = _lastResults.filter(function(r){ return !r.ok; }).length;
+        res.innerHTML = '<span style="color:#2E7D32;font-weight:800">✅ ' + ok + '名成功</span>' +
+          (ng ? ' <span style="color:#dc2626">/ ❌ ' + ng + '名失敗</span>' : '') +
+          '<br><small style="color:#9ca3af">CSV出力ボタンで配布用一覧をダウンロードできます。</small>';
+      } catch(e) {
+        res.innerHTML = '<span style="color:#dc2626">エラー: ' + esc(e.message) + '</span>';
+      } finally {
+        btn.disabled = false; btn.textContent = '⚠️ 一括リセット実行';
+      }
+    };
+
+    document.getElementById('pw-csv-btn').onclick = function() {
+      if (!_lastResults.length) { alert('先に一括リセットを実行してください。'); return; }
+      var cls  = document.getElementById('pw-class').value || 'class';
+      var rows = ['学籍番号,氏名,パスワード'];
+      _lastResults.forEach(function(r){ rows.push(['"'+r.student_number+'"', '"'+(r.name||'')+'"', '"'+(r.password||'')+'"'].join(',')); });
+      var blob = new Blob(['\uFEFF' + rows.join('\n')], { type:'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = cls + '_passwords.csv';
+      a.click();
+    };
+  }
+
 })();

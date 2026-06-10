@@ -49,6 +49,7 @@
     .portal-card--eiken::before  { background: #2563eb; }
     .portal-card--nh::before     { background: #16a34a; }
     .portal-card--account::before{ background: #7c3aed; }
+    .portal-card--gradebook::before{ background: #2E7D32; }
     .portal-card--admin::before  { background: #dc2626; }
     .portal-logout-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -94,7 +95,8 @@
   // ── Render portal ─────────────────────────────────────────────────────────
   function render(user, profile) {
     const name    = (profile && profile.display_name) ? profile.display_name : user.email;
-    const isAdmin = profile && ['admin', 'teacher'].includes(profile.role);
+    const isAdmin    = profile && ['admin', 'teacher'].includes(profile.role);
+    const isElevated = profile && ['admin', 'teacher', 'moderator'].includes(profile.role);
 
     // Get the school year from class_name e.g. "5年生" → "5年生"
     const grade = (profile && profile.class_name) ? profile.class_name : '';
@@ -147,6 +149,14 @@
             <div class="portal-card-desc">LetsTry2 関連のユーティリティツール。</div>
             <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">ユーティリティ</span>
           </a>
+
+          ${isElevated ? `
+          <a class="portal-card portal-card--gradebook" href="/site/gradebook/">
+            <div class="portal-card-icon">📒</div>
+            <div class="portal-card-title">グレードブック</div>
+            <div class="portal-card-desc">課題の作成・提出状況・クラス成績の確認。</div>
+            <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">教師・管理者</span>
+          </a>` : ''}
 
           ${isAdmin ? `
           <a class="portal-card portal-card--admin" href="/site/admin/">

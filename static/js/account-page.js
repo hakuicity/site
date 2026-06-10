@@ -214,11 +214,12 @@
           <div id="hk-iv-history"></div>
         </div>
 
-        <!-- Admin panel links (admin/teacher only) -->
-        ${(_profile && ['admin','teacher'].includes(_profile.role)) ? `
+        <!-- Admin/teacher/moderator links -->
+        ${(_profile && ['admin','teacher','moderator'].includes(_profile.role)) ? `
         <div class="hk-section">
           <div class="hk-section-title">🔐 管理者メニュー</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${['admin','teacher'].includes(_profile.role) ? `
             <a href="/site/admin/"
                style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
                       background:#1565C0;color:#fff;border-radius:8px;font-weight:700;
@@ -235,13 +236,30 @@
                onmouseover="this.style.background='#eff6ff'"
                onmouseout="this.style.background='#fff'">
               📋 生徒登録・管理
+            </a>` : ''}
+            <a href="/site/gradebook/"
+               style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+                      background:#fff;color:#2E7D32;border-radius:8px;font-weight:700;
+                      font-size:14px;text-decoration:none;border:1.5px solid #2E7D32;
+                      transition:all .15s"
+               onmouseover="this.style.background='#f0fdf4'"
+               onmouseout="this.style.background='#fff'">
+              📒 成績管理（グレードブック）
             </a>
           </div>
         </div>` : ''}
 
-        <!-- Profile settings -->
+        <!-- Profile settings (edit blocked for students) -->
         <div class="hk-section">
           <div class="hk-section-title">⚙️ プロフィール設定</div>
+          ${(_profile && _profile.role === 'student') ? `
+          <div style="font-size:13px;color:#6b7280;margin-bottom:12px">
+            <strong>${escHtml(_profile.display_name||'')}</strong>
+            &nbsp;•&nbsp; ${escHtml(_profile.class_name||'')}
+            &nbsp;•&nbsp; ${escHtml(_profile.student_number||'')}
+          </div>
+          <button class="hk-btn-sm hk-btn-danger" id="hk-logout-dash">ログアウト</button>
+          ` : `
           <div class="hk-profile-form" id="hk-profile-form">
             <div class="hk-profile-fld">
               <label>表示名</label>
@@ -262,7 +280,7 @@
               <span class="hk-save-ok" id="hk-save-ok">✓ 保存しました</span>
               <button class="hk-btn-sm hk-btn-danger" id="hk-logout-dash">ログアウト</button>
             </div>
-          </div>
+          </div>`}
         </div>
       </div>`;
 
@@ -280,7 +298,7 @@
       };
     });
 
-    document.getElementById('hk-save-profile').onclick = saveProfile;
+    if (document.getElementById('hk-save-profile')) document.getElementById('hk-save-profile').onclick = saveProfile;
     document.getElementById('hk-logout-dash').onclick  = async () => {
       await window.hk.signOut();
       window.location.href = '/site/login/';
