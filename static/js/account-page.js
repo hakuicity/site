@@ -498,7 +498,7 @@
   function agLink(ag) {
     switch (ag.app_id) {
       case 'newhorizon': return 'https://hakuicity.github.io/TangoApp/' + (ag.level ? '?cat=' + ag.level : '');
-      case 'nh6':        return 'https://hakuicity.github.io/NH6App/';
+      case 'nh6':        return 'https://hakuicity.github.io/NH6WebUtil/';
       case 'eiken':      return 'https://hakuicity.github.io/EikenApp/';
       default:           return '#';
     }
