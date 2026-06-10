@@ -565,7 +565,7 @@
         try {
           await callManageStudent({ action: 'revoke-staff', user_id: uid });
           _profiles = _profiles.filter(p => p.id !== uid);
-          renderRoot();
+          render();
         } catch(e) { alert('エラー: ' + e.message); }
       };
     });
@@ -652,7 +652,7 @@
         okEl.textContent = '✅ 保存しました。' + (pass ? ' パスワードもリセットしました。' : '');
         okEl.style.display = '';
         btn.disabled = false; btn.textContent = '保存する';
-        renderRoot();
+        render();
       } catch(e) {
         errEl.textContent = 'エラー: ' + e.message;
         errEl.style.display = '';
@@ -756,7 +756,7 @@
         const lp = _profiles.find(x=>x.id===p.id);
         if (lp) { lp.school = school||null; lp.subject = subject; lp.assigned_classes = assignedClasses.length ? assignedClasses : null; }
         modal.remove();
-        renderRoot();
+        render();
       } catch(e) {
         errEl.textContent = 'エラー: ' + e.message;
         errEl.style.display = '';
@@ -826,7 +826,7 @@
         modal.remove();
         // Add to local profiles list so it shows immediately
         _profiles.push({ id:data.user_id, display_name:name, role, school:null, created_at:new Date().toISOString() });
-        renderRoot();
+        render();
       } catch(e) {
         errEl.textContent = 'エラー: ' + e.message;
         errEl.style.display = '';
