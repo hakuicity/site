@@ -88,6 +88,32 @@
     .dark .hk-bar-wrap { background:#334155; }
     .dark .hk-level-tab { background:#1e293b; border-color:#475569; color:#f1f5f9; }
     .dark .hk-level-tab.active { background:#1565C0; border-color:#1565C0; }
+
+    .ag-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+    .ag-card {
+      background:#fff; border:1.5px solid #e5e7eb; border-left:4px solid #1565C0;
+      border-radius:10px; padding:16px; display:flex; flex-direction:column; gap:7px;
+      transition:box-shadow .18s;
+    }
+    .ag-card:hover { box-shadow:0 4px 14px rgba(0,0,0,.1); }
+    .ag-card--done { border-left-color:#16a34a; }
+    .ag-title { font-size:15px; font-weight:800; }
+    .ag-meta  { font-size:12px; color:#6b7280; }
+    .ag-due   { font-size:11px; font-weight:700; }
+    .ag-due--soon { color:#dc2626; }
+    .ag-due--near { color:#d97706; }
+    .ag-due--ok   { color:#6b7280; }
+    .ag-btn {
+      display:block; margin-top:4px; padding:8px 0; text-align:center;
+      background:#1565C0; color:#fff; border-radius:8px; border:none;
+      font-size:13px; font-weight:800; text-decoration:none; cursor:pointer;
+      transition:background .15s;
+    }
+    .ag-btn:hover { background:#0D47A1; }
+    .ag-btn--done { background:#16a34a; }
+    .ag-btn--done:hover { background:#15803d; }
+    .ag-score { font-size:13px; font-weight:800; }
+    .dark .ag-card { background:#1e293b; border-color:#334155; }
     .dark .hk-profile-fld input,.dark .hk-profile-fld select { background:#0f172a; border-color:#475569; color:#f1f5f9; }
     .dark .hk-section-title { color:#94a3b8; border-color:#334155; }
     .dark .hk-user-email { color:#64748b; }
@@ -97,7 +123,7 @@
 
   // ── Init ────────────────────────────────────────────────────────────────────
   let _user = null, _profile = null;
-  let _quizResults = [], _catStats = [], _ivScores = [];
+  let _quizResults = [], _catStats = [], _ivScores = [], _assignments = [];
   let _activeLevel = '5';
 
   const NH_CAT_NAMES = {
@@ -136,6 +162,17 @@
       window.hk.fetchMyCategoryStats(),
       window.hk.fetchMyInterviewScores()
     ]);
+    // Load assignments for students
+    if (_profile && _profile.role === 'student') {
+      try {
+        const { data: ag } = await window.hk._client
+          .from('assignments')
+          .select('*')
+          .or('class_name.is.null' + (_profile.class_name ? ',class_name.eq.' + _profile.class_name : ''))
+          .order('due_date', { ascending: true, nullsLast: true });
+        _assignments = ag || [];
+      } catch(e) { _assignments = []; }
+    }
     render();
   }
 
@@ -160,6 +197,9 @@
             </div>
           </div>
         </div>
+
+        <!-- Assignments (students only) -->
+        ${(_profile && _profile.role === 'student') ? '<div id="hk-assignments"></div>' : ''}
 
         <!-- Overview stats -->
         <div class="hk-section">
@@ -284,6 +324,7 @@
         </div>
       </div>`;
 
+    if (_profile && _profile.role === 'student') renderAssignments();
     renderCatBreakdown();
     renderQuizHistory();
     renderIvHistory();
@@ -446,6 +487,110 @@
     } finally {
       btn.disabled = false; btn.textContent = '保存する';
     }
+  }
+
+  // ── App deep-link helper ────────────────────────────────────────────────────
+  const APP_ICONS  = { eiken:'🎓', nh6:'📗', newhorizon:'📘' };
+  const APP_NAMES  = { eiken:'英検アプリ', nh6:'NH6 練習', newhorizon:'NH Vocab' };
+  const NH6_LEVELS = { u1:'Unit 1',u2:'Unit 2',u3:'Unit 3',u4:'Unit 4',
+                       u5:'Unit 5',u6:'Unit 6',u7:'Unit 7',u8:'Unit 8' };
+
+  function agLink(ag) {
+    switch (ag.app_id) {
+      case 'newhorizon': return 'https://hakuicity.github.io/TangoApp/' + (ag.level ? '?cat=' + ag.level : '');
+      case 'nh6':        return 'https://hakuicity.github.io/NH6App/';
+      case 'eiken':      return 'https://hakuicity.github.io/EikenApp/';
+      default:           return '#';
+    }
+  }
+
+  function agSectionLabel(ag) {
+    if (ag.app_id === 'nh6' && ag.level) return NH6_LEVELS[ag.level] || ag.level;
+    if (ag.app_id === 'newhorizon' && ag.level) return NH_CAT_NAMES[ag.level] || ag.level;
+    if (ag.app_id === 'eiken' && ag.level) return ag.level + '級';
+    return ag.category || '';
+  }
+
+  function agIsCompleted(ag) {
+    return _quizResults.some(r =>
+      r.app_id === ag.app_id &&
+      (!ag.level    || r.level    === ag.level) &&
+      (!ag.category || r.category === ag.category) &&
+      (!ag.due_date || r.created_at <= ag.due_date + 'T23:59:59')
+    );
+  }
+
+  function agBestScore(ag) {
+    const matches = _quizResults.filter(r =>
+      r.app_id === ag.app_id &&
+      (!ag.level    || r.level    === ag.level) &&
+      (!ag.category || r.category === ag.category)
+    );
+    if (!matches.length) return null;
+    return Math.max(...matches.map(r => r.score_pct || 0));
+  }
+
+  function agDueLabel(ag) {
+    if (!ag.due_date) return { text:'締切なし', cls:'ag-due--ok' };
+    const days = Math.ceil((new Date(ag.due_date) - new Date()) / 86400000);
+    if (days < 0)  return { text:'期限切れ', cls:'ag-due--ok' };
+    if (days === 0) return { text:'今日まで！', cls:'ag-due--soon' };
+    if (days <= 3)  return { text: days + '日後まで', cls:'ag-due--soon' };
+    if (days <= 7)  return { text: days + '日後まで', cls:'ag-due--near' };
+    return { text: ag.due_date + 'まで', cls:'ag-due--ok' };
+  }
+
+  function renderAssignments() {
+    const el = document.getElementById('hk-assignments');
+    if (!el) return;
+
+    if (!_assignments.length) {
+      el.innerHTML = '';
+      return;
+    }
+
+    const active    = _assignments.filter(ag => !agIsCompleted(ag));
+    const completed = _assignments.filter(ag =>  agIsCompleted(ag));
+
+    function cardHTML(ag) {
+      const done  = agIsCompleted(ag);
+      const score = agBestScore(ag);
+      const due   = agDueLabel(ag);
+      const sec   = agSectionLabel(ag);
+      const icon  = APP_ICONS[ag.app_id]  || '📱';
+      const app   = APP_NAMES[ag.app_id]  || ag.app_id;
+      const link  = agLink(ag);
+      return '<div class="ag-card' + (done ? ' ag-card--done' : '') + '">' +
+        '<div class="ag-title">' + escHtml(ag.title) + '</div>' +
+        '<div class="ag-meta">' + icon + ' ' + escHtml(app) + (sec ? ' &nbsp;›&nbsp; ' + escHtml(sec) : '') + '</div>' +
+        (ag.description ? '<div class="ag-meta" style="font-style:italic">' + escHtml(ag.description) + '</div>' : '') +
+        '<div class="ag-due ' + due.cls + '">📅 ' + escHtml(due.text) + '</div>' +
+        (done && score !== null
+          ? '<div class="ag-score" style="color:' + (score>=80?'#16a34a':score>=60?'#d97706':'#dc2626') + '">⭐ 最高点: ' + score + '%</div>'
+          : '') +
+        '<a class="ag-btn' + (done ? ' ag-btn--done' : '') + '" href="' + escHtml(link) + '" target="_blank" rel="noopener">' +
+          (done ? '✅ もう一度練習する' : '▶ 練習する') +
+        '</a>' +
+        '</div>';
+    }
+
+    let html = '';
+
+    if (active.length) {
+      html += '<div class="hk-section">' +
+        '<div class="hk-section-title">📋 課題 <span style="font-size:12px;background:#1565C0;color:#fff;border-radius:9px;padding:1px 8px;font-weight:700">' + active.length + '</span></div>' +
+        '<div class="ag-grid">' + active.map(cardHTML).join('') + '</div>' +
+        '</div>';
+    }
+
+    if (completed.length) {
+      html += '<div class="hk-section">' +
+        '<div class="hk-section-title">✅ 完了した課題</div>' +
+        '<div class="ag-grid">' + completed.map(cardHTML).join('') + '</div>' +
+        '</div>';
+    }
+
+    el.innerHTML = html;
   }
 
   function escHtml(s) {
