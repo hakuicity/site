@@ -315,7 +315,17 @@
       onAuthChange:                 hkOnAuthChange,
       studentEmail:                 hkStudentEmail,
       signInWithStudentId:          hkSignInWithStudentId,
-      createStudentAccount:         hkCreateStudentAccount
+      createStudentAccount:         hkCreateStudentAccount,
+      _client:                       hkClient,
+      getSession: async function() {
+        const { data: { session } } = await hkClient.auth.getSession();
+        return session;
+      },
+      updateProfile: async function(userId, updates) {
+        const { error } = await hkClient.from('profiles').update(updates).eq('id', userId);
+        if (error) throw new Error(error.message);
+        return true;
+      }
     };
     console.log('[HakuiClient] window.hk ready');
   }
