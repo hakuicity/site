@@ -485,6 +485,10 @@
         '<td style="font-size:11px;color:#6b7280;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + escHtml(classes) + '">' + escHtml(classes) + '</td>' +
         '<td><span style="font-weight:700;color:' + color + '">' + label + '</span></td>' +
         '<td style="white-space:nowrap">' +
+          (isAdmin
+            ? '<button class="edit-btn" data-uid="' + p.id + '" ' +
+              'style="padding:4px 10px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#374151;cursor:pointer;margin-right:4px">✎ 編集</button>'
+            : '') +
           (isAdmin && !isProtected
             ? '<button class="assign-btn" data-uid="' + p.id + '" ' +
               'style="padding:4px 10px;border:1.5px solid #a7f3d0;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#065f46;cursor:pointer;margin-right:4px">担当設定</button>'
@@ -535,6 +539,14 @@
       };
     });
 
+    // Edit buttons
+    el.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.onclick = function() {
+        const p = _profiles.find(x => x.id === this.dataset.uid);
+        if (p) showEditStaffModal(p);
+      };
+    });
+
     // Assignment buttons
     el.querySelectorAll('.assign-btn').forEach(btn => {
       btn.onclick = function() {
@@ -561,6 +573,94 @@
     if (isAdmin && document.getElementById('add-staff-btn')) {
       document.getElementById('add-staff-btn').onclick = () => showAddStaffModal();
     }
+  }
+
+  function showEditStaffModal(p) {
+    const existing = document.getElementById('edit-staff-modal');
+    if (existing) existing.remove();
+    const isProtected = p.role === 'admin';
+
+    const modal = document.createElement('div');
+    modal.id = 'edit-staff-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(4px)';
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:16px;padding:24px 22px;width:100%;max-width:400px;box-shadow:0 12px 40px rgba(0,0,0,.2)">' +
+      '<h2 style="font-size:18px;font-weight:900;margin-bottom:16px">✎ スタッフ編集</h2>' +
+
+      '<div style="margin-bottom:12px">' +
+      '<label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">表示名</label>' +
+      '<input type="text" id="es-name" value="' + escHtml(p.display_name||'') + '" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px"></div>' +
+
+      (!isProtected ?
+      '<div style="margin-bottom:12px">' +
+      '<label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">ロール</label>' +
+      '<select id="es-role" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px">' +
+      '<option value="teacher"' + (p.role==='teacher'?' selected':'') + '>教員</option>' +
+      '</select></div>' : '') +
+
+      '<div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border:1.5px solid #e5e7eb">' +
+      '<p style="font-size:12px;font-weight:700;margin-bottom:8px">🔑 パスワードリセット</p>' +
+      '<div style="display:flex;gap:6px">' +
+      '<input type="text" id="es-pass" placeholder="新しいパスワード（8文字以上）" style="flex:1;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:12px">' +
+      '<button id="es-gen" style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:12px;background:#fff;cursor:pointer">🎲</button>' +
+      '</div></div>' +
+
+      '<div id="es-err" style="margin-bottom:10px;padding:8px 12px;background:#fff5f5;border:1px solid #fca5a5;color:#dc2626;border-radius:7px;font-size:12px;display:none"></div>' +
+      '<div id="es-ok"  style="margin-bottom:10px;padding:8px 12px;background:#f0fdf4;border:1px solid #86efac;color:#166534;border-radius:7px;font-size:12px;display:none"></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+      '<button id="es-cancel" style="padding:9px 18px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;font-size:13px;font-weight:700;cursor:pointer">閉じる</button>' +
+      '<button id="es-save" style="padding:9px 18px;background:#1565C0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">保存する</button>' +
+      '</div></div>';
+
+    document.body.appendChild(modal);
+    modal.onclick = e => { if(e.target===modal) modal.remove(); };
+    modal.querySelector('#es-cancel').onclick = () => modal.remove();
+
+    modal.querySelector('#es-gen').onclick = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+      let pw = '';
+      for (let i = 0; i < 10; i++) pw += chars[Math.floor(Math.random()*chars.length)];
+      modal.querySelector('#es-pass').value = pw;
+    };
+
+    modal.querySelector('#es-save').onclick = async () => {
+      const name    = modal.querySelector('#es-name').value.trim();
+      const roleEl  = modal.querySelector('#es-role');
+      const role    = roleEl ? roleEl.value : p.role;
+      const pass    = modal.querySelector('#es-pass').value.trim();
+      const errEl   = modal.querySelector('#es-err');
+      const okEl    = modal.querySelector('#es-ok');
+      const btn     = modal.querySelector('#es-save');
+      errEl.style.display = 'none'; okEl.style.display = 'none';
+      if (!name) { errEl.textContent = '表示名を入力してください。'; errEl.style.display=''; return; }
+      if (pass && pass.length < 8) { errEl.textContent = 'パスワードは8文字以上にしてください。'; errEl.style.display=''; return; }
+
+      btn.disabled = true; btn.textContent = '保存中...';
+      try {
+        // Update profile fields
+        const { error: pErr } = await window.hk._client
+          .from('profiles').update({ display_name: name, role })
+          .eq('id', p.id);
+        if (pErr) throw new Error(pErr.message);
+
+        // Reset password if provided
+        if (pass) {
+          await callManageStudent({ action:'reset-password', user_id: p.id, new_password: pass });
+        }
+
+        // Update local cache
+        const lp = _profiles.find(x=>x.id===p.id);
+        if (lp) { lp.display_name = name; lp.role = role; }
+        okEl.textContent = '✅ 保存しました。' + (pass ? ' パスワードもリセットしました。' : '');
+        okEl.style.display = '';
+        btn.disabled = false; btn.textContent = '保存する';
+        renderRoot();
+      } catch(e) {
+        errEl.textContent = 'エラー: ' + e.message;
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = '保存する';
+      }
+    };
   }
 
   function showAssignModal(p, schools) {
