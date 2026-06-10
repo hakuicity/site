@@ -451,28 +451,44 @@
     const staffList = _profiles.filter(p => p.role !== 'student');
 
     const ROLE_LABELS = { admin:'管理者', teacher:'教員' };
+
+  const SUBJECTS = [
+    { id:'english',    ja:'英語',       active:true  },
+    { id:'calligraphy', ja:'書道',       active:true  },
+    { id:'japanese',   ja:'国語',       active:false },
+    { id:'math',       ja:'算数・数学', active:false },
+    { id:'science',    ja:'理科',       active:false },
+    { id:'social',     ja:'社会',       active:false },
+    { id:'pe',         ja:'体育',       active:false },
+    { id:'music',      ja:'音楽',       active:false },
+    { id:'art',        ja:'図工・美術', active:false },
+    { id:'home_ec',    ja:'家庭科',     active:false },
+    { id:'moral',      ja:'道徳',       active:false },
+    { id:'integrated', ja:'総合',       active:false },
+    { id:'homeroom',   ja:'担任',       active:false },
+  ];
     const ROLE_COLORS = { admin:'#a16207', teacher:'#15803d' };
+    const schools = [...new Set(_profiles.map(p=>p.school).filter(Boolean))].sort();
 
     const rows = staffList.map(p => {
       const isMe        = p.id === (_profile && _profile.id);
       const isProtected = p.role === 'admin';
       const label       = ROLE_LABELS[p.role] || p.role;
       const color       = ROLE_COLORS[p.role] || '#374151';
+      const subjLabel   = p.subject ? ((SUBJECTS.find(s=>s.id===p.subject)||{}).ja || p.subject) : '—';
+      const classes     = (p.assigned_classes || []).join(', ') || '—';
       return '<tr>' +
         '<td><strong>' + escHtml(p.display_name||'—') + '</strong>' +
           (isMe ? ' <span style="font-size:10px;color:#9ca3af">(自分)</span>' : '') + '</td>' +
         '<td style="font-size:12px;color:#6b7280">' + escHtml(p.school||'—') + '</td>' +
-        '<td>' +
-          (isAdmin && !isProtected && !isMe
-            ? '<select class="role-select" data-uid="' + p.id + '" data-name="' + escHtml(p.display_name||'') + '" ' +
-              'style="padding:4px 8px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:700;color:' + color + '">' +
-              ['teacher',].map(r =>
-                '<option value="' + r + '"' + (r === p.role ? ' selected' : '') + '>' + ROLE_LABELS[r] + '</option>'
-              ).join('') +
-              '</select>'
-            : '<span style="font-weight:700;color:' + color + '">' + label + '</span>') +
-        '</td>' +
-        '<td>' +
+        '<td style="font-size:12px">' + escHtml(subjLabel) + '</td>' +
+        '<td style="font-size:11px;color:#6b7280;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + escHtml(classes) + '">' + escHtml(classes) + '</td>' +
+        '<td><span style="font-weight:700;color:' + color + '">' + label + '</span></td>' +
+        '<td style="white-space:nowrap">' +
+          (isAdmin && !isProtected
+            ? '<button class="assign-btn" data-uid="' + p.id + '" ' +
+              'style="padding:4px 10px;border:1.5px solid #a7f3d0;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#065f46;cursor:pointer;margin-right:4px">担当設定</button>'
+            : '') +
           (isAdmin && !isProtected && !isMe
             ? '<button class="revoke-btn" data-uid="' + p.id + '" data-name="' + escHtml(p.display_name||'') + '" ' +
               'style="padding:4px 10px;border:1.5px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:700;background:#fff;color:#dc2626;cursor:pointer">削除</button>'
@@ -494,7 +510,7 @@
         ? '<p style="font-size:12px;color:#6b7280;margin-bottom:12px">ロールの変更と新規スタッフの追加ができます。管理者アカウントはここでは変更できません。</p>'
         : '<p style="font-size:12px;color:#6b7280;margin-bottom:12px">スタッフ一覧です（閲覧のみ）。</p>') +
       '<table class="adm-table"><thead><tr>' +
-      '<th>名前</th><th>学校</th><th>ロール</th><th></th><th>登録日</th>' +
+      '<th>名前</th><th>学校</th><th>担当教科</th><th>担当クラス</th><th>ロール</th><th></th><th>登録日</th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table>' +
       '</div>';
 
@@ -519,6 +535,14 @@
       };
     });
 
+    // Assignment buttons
+    el.querySelectorAll('.assign-btn').forEach(btn => {
+      btn.onclick = function() {
+        const p = _profiles.find(x => x.id === this.dataset.uid);
+        if (p) showAssignModal(p, schools);
+      };
+    });
+
     // Revoke buttons
     el.querySelectorAll('.revoke-btn').forEach(btn => {
       btn.onclick = async function() {
@@ -537,6 +561,110 @@
     if (isAdmin && document.getElementById('add-staff-btn')) {
       document.getElementById('add-staff-btn').onclick = () => showAddStaffModal();
     }
+  }
+
+  function showAssignModal(p, schools) {
+    const existing = document.getElementById('assign-modal');
+    if (existing) existing.remove();
+
+    // Parse current assigned_classes
+    const currentClasses = (p.assigned_classes || []).join(', ');
+    // All classes from student roster
+    const allClasses = [...new Set(_profiles.filter(x=>x.role==='student').map(x=>x.class_name).filter(Boolean))].sort();
+    const schoolList = schools.length ? schools : (p.school ? [p.school] : []);
+
+    const modal = document.createElement('div');
+    modal.id = 'assign-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(4px)';
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:16px;padding:24px 22px;width:100%;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.2)">' +
+      '<h2 style="font-size:18px;font-weight:900;margin-bottom:4px">担当設定</h2>' +
+      '<p style="font-size:12px;color:#6b7280;margin-bottom:16px">' + escHtml(p.display_name||'') + '</p>' +
+
+      '<div style="margin-bottom:12px">' +
+      '<label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">担当学校</label>' +
+      '<div style="display:flex;gap:6px">' +
+      '<select id="as-school" style="flex:1;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px">' +
+      '<option value="">指定なし（全校）</option>' +
+      schoolList.map(s=>'<option value="'+escHtml(s)+'"'+(s===p.school?' selected':'')+'>'+escHtml(s)+'</option>').join('') +
+      '</select>' +
+      '<input type="text" id="as-school-new" placeholder="新しい学校名" style="flex:1;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px">' +
+      '</div>' +
+      '<p style="font-size:10px;color:#9ca3af;margin-top:3px">学校名を選択するか、新しい名前を入力してください</p>' +
+      '</div>' +
+
+      '<div style="margin-bottom:12px">' +
+      '<label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:4px">担当教科</label>' +
+      '<select id="as-subject" style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px">' +
+      '<option value="">指定なし</option>' +
+      SUBJECTS.map(s=>'<option value="'+s.id+'"'+(s.id===p.subject?' selected':'')+'>'+s.ja+(s.active?' ★':'')+'</option>').join('') +
+      '</select>' +
+      '</div>' +
+
+      '<div style="margin-bottom:16px">' +
+      '<label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:6px">担当クラス</label>' +
+      (allClasses.length
+        ? '<div style="display:flex;flex-wrap:wrap;gap:6px" id="as-classes-check">' +
+          allClasses.map(c =>
+            '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:3px 8px;border:1.5px solid #e5e7eb;border-radius:6px;'+
+            ((p.assigned_classes||[]).includes(c)?'background:#eff6ff;border-color:#93c5fd;':'background:#f9fafb;')+ '">' +
+            '<input type="checkbox" value="'+escHtml(c)+'"'+((p.assigned_classes||[]).includes(c)?' checked':'')+' style="accent-color:#1565C0"> '+escHtml(c)+
+            '</label>'
+          ).join('') +
+          '</div>'
+        : '<input type="text" id="as-classes-text" value="'+escHtml(currentClasses)+'" placeholder="例: 3年生, 4年生" style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px">'+
+          '<p style="font-size:10px;color:#9ca3af;margin-top:3px">カンマ区切りで複数クラスを入力</p>') +
+      '</div>' +
+
+      '<div id="as-err" style="margin-bottom:10px;padding:8px 12px;background:#fff5f5;border:1px solid #fca5a5;color:#dc2626;border-radius:7px;font-size:12px;display:none"></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+      '<button id="as-cancel" style="padding:9px 18px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;font-size:13px;font-weight:700;cursor:pointer">キャンセル</button>' +
+      '<button id="as-save" style="padding:9px 18px;background:#1565C0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">保存する</button>' +
+      '</div></div>';
+
+    document.body.appendChild(modal);
+    modal.onclick = e => { if(e.target===modal) modal.remove(); };
+    modal.querySelector('#as-cancel').onclick = () => modal.remove();
+
+    modal.querySelector('#as-save').onclick = async () => {
+      const schoolDrop  = modal.querySelector('#as-school').value;
+      const schoolNew   = modal.querySelector('#as-school-new').value.trim();
+      const school      = schoolNew || schoolDrop || '';
+      const subject     = modal.querySelector('#as-subject').value || null;
+
+      // Collect classes
+      let assignedClasses = [];
+      const checkboxes = modal.querySelectorAll('#as-classes-check input[type=checkbox]');
+      const textInput  = modal.querySelector('#as-classes-text');
+      if (checkboxes.length) {
+        checkboxes.forEach(cb => { if (cb.checked) assignedClasses.push(cb.value); });
+      } else if (textInput) {
+        assignedClasses = textInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+      }
+
+      const errEl = modal.querySelector('#as-err');
+      const btn   = modal.querySelector('#as-save');
+      btn.disabled = true; btn.textContent = '保存中...';
+      errEl.style.display = 'none';
+
+      try {
+        const { error } = await window.hk._client
+          .from('profiles')
+          .update({ school: school||null, subject, assigned_classes: assignedClasses.length ? assignedClasses : null })
+          .eq('id', p.id);
+        if (error) throw new Error(error.message);
+
+        // Update local cache
+        const lp = _profiles.find(x=>x.id===p.id);
+        if (lp) { lp.school = school||null; lp.subject = subject; lp.assigned_classes = assignedClasses.length ? assignedClasses : null; }
+        modal.remove();
+        renderRoot();
+      } catch(e) {
+        errEl.textContent = 'エラー: ' + e.message;
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = '保存する';
+      }
+    };
   }
 
   function showAddStaffModal() {
