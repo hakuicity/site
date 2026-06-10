@@ -92,6 +92,22 @@
   let _user = null, _profile = null;
   let _profiles = [], _allQuiz = [], _allIv = [];
   let _activeTab = 'students';
+
+  const SUBJECTS = [
+    { id:'english',     ja:'英語',       active:true  },
+    { id:'calligraphy', ja:'書道',       active:true  },
+    { id:'japanese',    ja:'国語',       active:false },
+    { id:'math',        ja:'算数・数学', active:false },
+    { id:'science',     ja:'理科',       active:false },
+    { id:'social',      ja:'社会',       active:false },
+    { id:'pe',          ja:'体育',       active:false },
+    { id:'music',       ja:'音楽',       active:false },
+    { id:'art',         ja:'図工・美術', active:false },
+    { id:'home_ec',     ja:'家庭科',     active:false },
+    { id:'moral',       ja:'道徳',       active:false },
+    { id:'integrated',  ja:'総合',       active:false },
+    { id:'homeroom',    ja:'担任',       active:false },
+  ];
   let _selectedStudent = null;
   let _classFilter = '', _searchQuery = '';
 
@@ -451,22 +467,6 @@
     const staffList = _profiles.filter(p => p.role !== 'student');
 
     const ROLE_LABELS = { admin:'管理者', teacher:'教員' };
-
-  const SUBJECTS = [
-    { id:'english',    ja:'英語',       active:true  },
-    { id:'calligraphy', ja:'書道',       active:true  },
-    { id:'japanese',   ja:'国語',       active:false },
-    { id:'math',       ja:'算数・数学', active:false },
-    { id:'science',    ja:'理科',       active:false },
-    { id:'social',     ja:'社会',       active:false },
-    { id:'pe',         ja:'体育',       active:false },
-    { id:'music',      ja:'音楽',       active:false },
-    { id:'art',        ja:'図工・美術', active:false },
-    { id:'home_ec',    ja:'家庭科',     active:false },
-    { id:'moral',      ja:'道徳',       active:false },
-    { id:'integrated', ja:'総合',       active:false },
-    { id:'homeroom',   ja:'担任',       active:false },
-  ];
     const ROLE_COLORS = { admin:'#a16207', teacher:'#15803d' };
     const schools = [...new Set(_profiles.map(p=>p.school).filter(Boolean))].sort();
 
