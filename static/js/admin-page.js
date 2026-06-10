@@ -107,7 +107,7 @@
       return;
     }
     _profile = await window.hk.getProfile(_user.id);
-    if (!_profile || !['admin','teacher','moderator'].includes(_profile.role)) {
+    if (!_profile || !['admin','teacher'].includes(_profile.role)) {
       root.innerHTML = `<div style="text-align:center;padding:48px">
         <p style="font-size:18px;margin-bottom:8px">⛔ アクセス権がありません</p>
         <p style="color:#6b7280;font-size:14px">このページは管理者・教員のみアクセス可能です。</p>
@@ -450,8 +450,8 @@
     const isAdmin   = _profile && _profile.role === 'admin';
     const staffList = _profiles.filter(p => p.role !== 'student');
 
-    const ROLE_LABELS = { admin:'管理者', teacher:'教員', moderator:'モデレーター' };
-    const ROLE_COLORS = { admin:'#a16207', teacher:'#15803d', moderator:'#6d28d9' };
+    const ROLE_LABELS = { admin:'管理者', teacher:'教員' };
+    const ROLE_COLORS = { admin:'#a16207', teacher:'#15803d' };
 
     const rows = staffList.map(p => {
       const isMe        = p.id === (_profile && _profile.id);
@@ -466,7 +466,7 @@
           (isAdmin && !isProtected && !isMe
             ? '<select class="role-select" data-uid="' + p.id + '" data-name="' + escHtml(p.display_name||'') + '" ' +
               'style="padding:4px 8px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-weight:700;color:' + color + '">' +
-              ['teacher','moderator'].map(r =>
+              ['teacher',].map(r =>
                 '<option value="' + r + '"' + (r === p.role ? ' selected' : '') + '>' + ROLE_LABELS[r] + '</option>'
               ).join('') +
               '</select>'
@@ -557,7 +557,7 @@
       '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">ロール *</label>' +
       '<select id="ns-role" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px">' +
       '<option value="teacher">教員</option>' +
-      '<option value="moderator">モデレーター</option>' +
+      '' +
       '</select></div>' +
       '<div><label style="font-size:11px;font-weight:800;text-transform:uppercase;color:#6b7280;display:block;margin-bottom:3px">初期パスワード *</label>' +
       '<div style="display:flex;gap:6px">' +
