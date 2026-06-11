@@ -3,20 +3,20 @@
 'use strict';
 
 (function waitForHk() {
-  if (typeof window.hk === 'undefined') {
-    setTimeout(waitForHk, 50);
-    return;
-  }
-  const root = document.getElementById('hk-account-page');
-  if (!root) return;
+    if (typeof window.hk === 'undefined') {
+        setTimeout(waitForHk, 50);
+        return;
+    }
+    const root = document.getElementById('hk-account-page');
+    if (!root) return;
 
-  const LEVEL_LABEL = { '5': '5級', '4': '4級', '3': '3級', 'P': '準2級' };
-  const CAT_LABEL   = { ALL: 'すべて', VOCAB: '語い', GRAMMAR: '文法', CONVERSATION: '会話', ORDER: '語順' };
-  const CAT_COLOR   = { ALL:'#37474F', VOCAB:'#2E7D32', GRAMMAR:'#1565C0', CONVERSATION:'#E65100', ORDER:'#6A1B9A' };
+    const LEVEL_LABEL = { '5': '5級', '4': '4級', '3': '3級', 'P': '準2級' };
+    const CAT_LABEL = { ALL: 'すべて', VOCAB: '語い', GRAMMAR: '文法', CONVERSATION: '会話', ORDER: '語順' };
+    const CAT_COLOR = { ALL: '#37474F', VOCAB: '#2E7D32', GRAMMAR: '#1565C0', CONVERSATION: '#E65100', ORDER: '#6A1B9A' };
 
-  // ── Styles ──────────────────────────────────────────────────────────────────
-  const style = document.createElement('style');
-  style.textContent = `
+    // ── Styles ──────────────────────────────────────────────────────────────────
+    const style = document.createElement('style');
+    style.textContent = `
     .hk-dash { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; }
     .hk-dash-header { display:flex; align-items:center; justify-content:space-between;
       flex-wrap:wrap; gap:12px; margin-bottom:24px; }
@@ -119,73 +119,73 @@
     .dark .hk-user-email { color:#64748b; }
     .dark .hk-btn-sm { border-color:#475569; color:#94a3b8; }
   `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 
-  // ── Init ────────────────────────────────────────────────────────────────────
-  let _user = null, _profile = null;
-  let _quizResults = [], _catStats = [], _ivScores = [], _assignments = [];
-  let _activeLevel = '5';
+    // ── Init ────────────────────────────────────────────────────────────────────
+    let _user = null, _profile = null;
+    let _quizResults = [], _catStats = [], _ivScores = [], _assignments = [];
+    let _activeLevel = '5';
 
-  const NH_CAT_NAMES = {
-    feelings:'気持ち', numbers:'数', colors:'色', shapes:'形',
-    sports:'スポーツ', food:'食べ物', drinks:'飲み物', desserts:'デザート',
-    fruit:'果物', vegetables:'野菜', ingredients:'食材', tastes:'味',
-    animals:'動物', 'sea-animals':'海の生き物', bugs:'虫', nature:'自然',
-    time:'月・曜日・季節', weather:'天気', people:'人', family:'家族',
-    personalities:'性格', actions:'動作', daily:'一日の生活',
-    clothes:'服装', body:'からだ', town:'町', school:'学校',
-    stationery:'文房具', instruments:'楽器', things:'身の回りのもの',
-    events:'行事', descriptions:'様子', jobs:'職業', clubs:'部活動',
-    'g5u1':'5年 Unit 1','g5u2':'5年 Unit 2','g5u3':'5年 Unit 3',
-    'g5u4':'5年 Unit 4','g5u5':'5年 Unit 5','g5u6':'5年 Unit 6',
-    'g5u7':'5年 Unit 7','g5u8':'5年 Unit 8',
-    'g6u1':'6年 Unit 1','g6u2':'6年 Unit 2','g6u3':'6年 Unit 3',
-    'g6u4':'6年 Unit 4','g6u5':'6年 Unit 5','g6u6':'6年 Unit 6',
-    'g6u7':'6年 Unit 7','g6u8':'6年 Unit 8', all:'全Unit'
-  };
+    const NH_CAT_NAMES = {
+        feelings: '気持ち', numbers: '数', colors: '色', shapes: '形',
+        sports: 'スポーツ', food: '食べ物', drinks: '飲み物', desserts: 'デザート',
+        fruit: '果物', vegetables: '野菜', ingredients: '食材', tastes: '味',
+        animals: '動物', 'sea-animals': '海の生き物', bugs: '虫', nature: '自然',
+        time: '月・曜日・季節', weather: '天気', people: '人', family: '家族',
+        personalities: '性格', actions: '動作', daily: '一日の生活',
+        clothes: '服装', body: 'からだ', town: '町', school: '学校',
+        stationery: '文房具', instruments: '楽器', things: '身の回りのもの',
+        events: '行事', descriptions: '様子', jobs: '職業', clubs: '部活動',
+        'g5u1': '5年 Unit 1', 'g5u2': '5年 Unit 2', 'g5u3': '5年 Unit 3',
+        'g5u4': '5年 Unit 4', 'g5u5': '5年 Unit 5', 'g5u6': '5年 Unit 6',
+        'g5u7': '5年 Unit 7', 'g5u8': '5年 Unit 8',
+        'g6u1': '6年 Unit 1', 'g6u2': '6年 Unit 2', 'g6u3': '6年 Unit 3',
+        'g6u4': '6年 Unit 4', 'g6u5': '6年 Unit 5', 'g6u6': '6年 Unit 6',
+        'g6u7': '6年 Unit 7', 'g6u8': '6年 Unit 8', all: '全Unit'
+    };
 
-  async function init() {
-    root.innerHTML = '<p style="text-align:center;padding:40px;color:#6b7280">読み込み中...</p>';
-    _user = await window.hk.getUser();
-    if (!_user) {
-      root.innerHTML = `
+    async function init() {
+        root.innerHTML = '<p style="text-align:center;padding:40px;color:#6b7280">読み込み中...</p>';
+        _user = await window.hk.getUser();
+        if (!_user) {
+            root.innerHTML = `
         <div style="text-align:center;padding:48px">
           <p style="font-size:16px;margin-bottom:16px">ダッシュボードを表示するにはログインが必要です。</p>
           <a href="/site/login/" style="display:inline-block;padding:11px 24px;background:#1565C0;
             color:#fff;border-radius:8px;font-weight:700;text-decoration:none">ログインする</a>
         </div>`;
-      return;
+            return;
+        }
+        [_profile, _quizResults, _catStats, _ivScores] = await Promise.all([
+            window.hk.getProfile(_user.id),
+            window.hk.fetchMyQuizResults(),
+            window.hk.fetchMyCategoryStats(),
+            window.hk.fetchMyInterviewScores()
+        ]);
+        // Load assignments for students
+        if (_profile && _profile.role === 'student') {
+            try {
+                const { data: ag } = await window.hk._client
+                    .from('assignments')
+                    .select('*')
+                    .or('class_name.is.null' + (_profile.class_name ? ',class_name.eq.' + _profile.class_name : ''))
+                    .order('due_date', { ascending: true, nullsLast: true });
+                _assignments = ag || [];
+            } catch (e) { _assignments = []; }
+        }
+        render();
     }
-    [_profile, _quizResults, _catStats, _ivScores] = await Promise.all([
-      window.hk.getProfile(_user.id),
-      window.hk.fetchMyQuizResults(),
-      window.hk.fetchMyCategoryStats(),
-      window.hk.fetchMyInterviewScores()
-    ]);
-    // Load assignments for students
-    if (_profile && _profile.role === 'student') {
-      try {
-        const { data: ag } = await window.hk._client
-          .from('assignments')
-          .select('*')
-          .or('class_name.is.null' + (_profile.class_name ? ',class_name.eq.' + _profile.class_name : ''))
-          .order('due_date', { ascending: true, nullsLast: true });
-        _assignments = ag || [];
-      } catch(e) { _assignments = []; }
-    }
-    render();
-  }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-  function render() {
-    const name    = (_profile && _profile.display_name) ? _profile.display_name : _user.email;
-    const initial = name.charAt(0).toUpperCase();
-    const totalSessions = [...new Set(_quizResults.map(r => r.created_at.slice(0,10)))].length;
-    const totalQ        = _quizResults.filter(r => r.category === 'ALL').reduce((s,r) => s + r.total, 0);
-    const totalCorrect  = _quizResults.filter(r => r.category === 'ALL').reduce((s,r) => s + r.correct, 0);
-    const overallPct    = totalQ > 0 ? Math.round(totalCorrect / totalQ * 100) : 0;
+    // ── Render ──────────────────────────────────────────────────────────────────
+    function render() {
+        const name = (_profile && _profile.display_name) ? _profile.display_name : _user.email;
+        const initial = name.charAt(0).toUpperCase();
+        const totalSessions = [...new Set(_quizResults.map(r => r.created_at.slice(0, 10)))].length;
+        const totalQ = _quizResults.filter(r => r.category === 'ALL').reduce((s, r) => s + r.total, 0);
+        const totalCorrect = _quizResults.filter(r => r.category === 'ALL').reduce((s, r) => s + r.correct, 0);
+        const overallPct = totalQ > 0 ? Math.round(totalCorrect / totalQ * 100) : 0;
 
-    root.innerHTML = `
+        root.innerHTML = `
       <div class="hk-dash">
         <div class="hk-dash-header">
           <h1>マイページ</h1>
@@ -206,7 +206,7 @@
           <div class="hk-section-title">📊 成績の概要</div>
           <div class="hk-stat-grid">
             <div class="hk-stat-card">
-              <div class="hk-stat-num" style="color:#1565C0">${_quizResults.filter(r=>r.category==='ALL').length}</div>
+              <div class="hk-stat-num" style="color:#1565C0">${_quizResults.filter(r => r.category === 'ALL').length}</div>
               <div class="hk-stat-lbl">セッション数</div>
             </div>
             <div class="hk-stat-card">
@@ -228,8 +228,8 @@
         <div class="hk-section">
           <div class="hk-section-title">📚 レベル別の成績</div>
           <div class="hk-level-tabs" id="hk-level-tabs">
-            ${['5','4','3','P'].map(lv => `
-              <button class="hk-level-tab${lv===_activeLevel?' active':''}" data-lv="${lv}">
+            ${['5', '4', '3', 'P'].map(lv => `
+              <button class="hk-level-tab${lv === _activeLevel ? ' active' : ''}" data-lv="${lv}">
                 ${LEVEL_LABEL[lv]}
               </button>`).join('')}
           </div>
@@ -255,11 +255,11 @@
         </div>
 
         <!-- Admin/teacher links -->
-        ${(_profile && ['admin','teacher'].includes(_profile.role)) ? `
+        ${(_profile && ['admin', 'teacher'].includes(_profile.role)) ? `
         <div class="hk-section">
           <div class="hk-section-title">🔐 管理者メニュー</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            ${['admin','teacher'].includes(_profile.role) ? `
+            ${['admin', 'teacher'].includes(_profile.role) ? `
             <a href="/site/admin/"
                style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
                       background:#1565C0;color:#fff;border-radius:8px;font-weight:700;
@@ -277,7 +277,7 @@
                onmouseout="this.style.background='#fff'">
               📋 生徒登録・管理
             </a>` : ''}
-            <a href="/site/gradebook/"
+            <a href="https://hakuicity.github.io/GradeBook/"
                style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
                       background:#fff;color:#2E7D32;border-radius:8px;font-weight:700;
                       font-size:14px;text-decoration:none;border:1.5px solid #2E7D32;
@@ -294,26 +294,26 @@
           <div class="hk-section-title">⚙️ プロフィール設定</div>
           ${(_profile && _profile.role === 'student') ? `
           <div style="font-size:13px;color:#6b7280;margin-bottom:12px">
-            <strong>${escHtml(_profile.display_name||'')}</strong>
-            &nbsp;•&nbsp; ${escHtml(_profile.class_name||'')}
-            &nbsp;•&nbsp; ${escHtml(_profile.student_number||'')}
+            <strong>${escHtml(_profile.display_name || '')}</strong>
+            &nbsp;•&nbsp; ${escHtml(_profile.class_name || '')}
+            &nbsp;•&nbsp; ${escHtml(_profile.student_number || '')}
           </div>
           <button class="hk-btn-sm hk-btn-danger" id="hk-logout-dash">ログアウト</button>
           ` : `
           <div class="hk-profile-form" id="hk-profile-form">
             <div class="hk-profile-fld">
               <label>表示名</label>
-              <input type="text" id="pf-name" value="${escHtml((_profile&&_profile.display_name)||'')}">
+              <input type="text" id="pf-name" value="${escHtml((_profile && _profile.display_name) || '')}">
             </div>
             <div class="hk-profile-fld">
               <label>クラス名</label>
               <input type="text" id="pf-class" placeholder="例：3年1組"
-                value="${escHtml((_profile&&_profile.class_name)||'')}">
+                value="${escHtml((_profile && _profile.class_name) || '')}">
             </div>
             <div class="hk-profile-fld">
               <label>学校名</label>
               <input type="text" id="pf-school" placeholder="例：羽咋中学校"
-                value="${escHtml((_profile&&_profile.school)||'')}">
+                value="${escHtml((_profile && _profile.school) || '')}">
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="hk-btn-sm" id="hk-save-profile">保存する</button>
@@ -324,43 +324,43 @@
         </div>
       </div>`;
 
-    if (_profile && _profile.role === 'student') renderAssignments();
-    renderCatBreakdown();
-    renderQuizHistory();
-    renderIvHistory();
-    renderNhSection();
-
-    // Level tab clicks
-    root.querySelectorAll('.hk-level-tab').forEach(btn => {
-      btn.onclick = () => {
-        _activeLevel = btn.dataset.lv;
-        root.querySelectorAll('.hk-level-tab').forEach(b => b.classList.toggle('active', b.dataset.lv === _activeLevel));
+        if (_profile && _profile.role === 'student') renderAssignments();
         renderCatBreakdown();
-      };
-    });
+        renderQuizHistory();
+        renderIvHistory();
+        renderNhSection();
 
-    if (document.getElementById('hk-save-profile')) document.getElementById('hk-save-profile').onclick = saveProfile;
-    document.getElementById('hk-logout-dash').onclick  = async () => {
-      await window.hk.signOut();
-      window.location.href = '/site/login/';
-    };
-  }
+        // Level tab clicks
+        root.querySelectorAll('.hk-level-tab').forEach(btn => {
+            btn.onclick = () => {
+                _activeLevel = btn.dataset.lv;
+                root.querySelectorAll('.hk-level-tab').forEach(b => b.classList.toggle('active', b.dataset.lv === _activeLevel));
+                renderCatBreakdown();
+            };
+        });
 
-  function renderCatBreakdown() {
-    const el = document.getElementById('hk-cat-breakdown');
-    if (!el) return;
-    const cats = ['VOCAB','GRAMMAR','CONVERSATION','ORDER'];
-    const stats = _catStats.filter(s => s.level === _activeLevel);
-    if (stats.length === 0) {
-      el.innerHTML = '<p class="hk-empty">このレベルのデータはまだありません。</p>'; return;
+        if (document.getElementById('hk-save-profile')) document.getElementById('hk-save-profile').onclick = saveProfile;
+        document.getElementById('hk-logout-dash').onclick = async () => {
+            await window.hk.signOut();
+            window.location.href = '/site/login/';
+        };
     }
-    const rows = cats.map(cat => {
-      const s = stats.find(x => x.category === cat);
-      if (!s || (s.right_count + s.wrong_count) === 0) return '';
-      const tot = s.right_count + s.wrong_count;
-      const pct = Math.round(s.right_count / tot * 100);
-      const color = CAT_COLOR[cat];
-      return `<tr>
+
+    function renderCatBreakdown() {
+        const el = document.getElementById('hk-cat-breakdown');
+        if (!el) return;
+        const cats = ['VOCAB', 'GRAMMAR', 'CONVERSATION', 'ORDER'];
+        const stats = _catStats.filter(s => s.level === _activeLevel);
+        if (stats.length === 0) {
+            el.innerHTML = '<p class="hk-empty">このレベルのデータはまだありません。</p>'; return;
+        }
+        const rows = cats.map(cat => {
+            const s = stats.find(x => x.category === cat);
+            if (!s || (s.right_count + s.wrong_count) === 0) return '';
+            const tot = s.right_count + s.wrong_count;
+            const pct = Math.round(s.right_count / tot * 100);
+            const color = CAT_COLOR[cat];
+            return `<tr>
         <td><span class="hk-badge" style="background:${color}22;color:${color}">${CAT_LABEL[cat]}</span></td>
         <td>${s.right_count} / ${tot}</td>
         <td>
@@ -368,234 +368,236 @@
             <div class="hk-bar" style="width:${pct}%;background:${color}"></div>
           </div>
         </td>
-        <td style="font-weight:700;color:${pct>=70?'#166534':pct>=50?'#92400e':'#991b1b'}">${pct}%</td>
+        <td style="font-weight:700;color:${pct >= 70 ? '#166534' : pct >= 50 ? '#92400e' : '#991b1b'}">${pct}%</td>
       </tr>`;
-    }).join('');
-    el.innerHTML = rows
-      ? `<table class="hk-cat-table">
+        }).join('');
+        el.innerHTML = rows
+            ? `<table class="hk-cat-table">
            <thead><tr><th>カテゴリー</th><th>正解 / 合計</th><th>進捗</th><th>正答率</th></tr></thead>
            <tbody>${rows}</tbody>
          </table>`
-      : '<p class="hk-empty">このレベルのデータはまだありません。</p>';
-  }
+            : '<p class="hk-empty">このレベルのデータはまだありません。</p>';
+    }
 
-  function renderQuizHistory() {
-    const el = document.getElementById('hk-quiz-history');
-    if (!el) return;
-    const recent = _quizResults.filter(r => r.category === 'ALL').slice(0, 20);
-    if (recent.length === 0) { el.innerHTML = '<p class="hk-empty">クイズ履歴はまだありません。</p>'; return; }
-    const rows = recent.map(r => {
-      const d = new Date(r.created_at);
-      const pct = r.score_pct;
-      const color = pct >= 70 ? '#166534' : pct >= 50 ? '#92400e' : '#991b1b';
-      return `<tr>
+    function renderQuizHistory() {
+        const el = document.getElementById('hk-quiz-history');
+        if (!el) return;
+        const recent = _quizResults.filter(r => r.category === 'ALL').slice(0, 20);
+        if (recent.length === 0) { el.innerHTML = '<p class="hk-empty">クイズ履歴はまだありません。</p>'; return; }
+        const rows = recent.map(r => {
+            const d = new Date(r.created_at);
+            const pct = r.score_pct;
+            const color = pct >= 70 ? '#166534' : pct >= 50 ? '#92400e' : '#991b1b';
+            return `<tr>
         <td>${d.toLocaleDateString('ja-JP')}</td>
         <td>${LEVEL_LABEL[r.level] || r.level}</td>
         <td>セット${r.set_id}</td>
         <td>${r.correct} / ${r.total}</td>
         <td style="font-weight:700;color:${color}">${pct}%</td>
       </tr>`;
-    }).join('');
-    el.innerHTML = `<table class="hk-history-table">
+        }).join('');
+        el.innerHTML = `<table class="hk-history-table">
       <thead><tr><th>日付</th><th>レベル</th><th>セット</th><th>正解</th><th>正答率</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
-  }
+    }
 
-  function renderIvHistory() {
-    const el = document.getElementById('hk-iv-history');
-    if (!el) return;
-    const recent = _ivScores.slice(0, 20);
-    if (recent.length === 0) { el.innerHTML = '<p class="hk-empty">面接練習の履歴はまだありません。</p>'; return; }
-    const rows = recent.map(r => {
-      const d = new Date(r.created_at);
-      const color = r.avg_score >= 70 ? '#166534' : r.avg_score >= 50 ? '#92400e' : '#991b1b';
-      return `<tr>
+    function renderIvHistory() {
+        const el = document.getElementById('hk-iv-history');
+        if (!el) return;
+        const recent = _ivScores.slice(0, 20);
+        if (recent.length === 0) { el.innerHTML = '<p class="hk-empty">面接練習の履歴はまだありません。</p>'; return; }
+        const rows = recent.map(r => {
+            const d = new Date(r.created_at);
+            const color = r.avg_score >= 70 ? '#166534' : r.avg_score >= 50 ? '#92400e' : '#991b1b';
+            return `<tr>
         <td>${d.toLocaleDateString('ja-JP')}</td>
         <td>${LEVEL_LABEL[r.level] || r.level}</td>
         <td>セッション ${r.session_id}</td>
         <td>${escHtml(r.topic)}</td>
         <td style="font-weight:700;color:${color}">${r.avg_score}%</td>
       </tr>`;
-    }).join('');
-    el.innerHTML = `<table class="hk-history-table">
+        }).join('');
+        el.innerHTML = `<table class="hk-history-table">
       <thead><tr><th>日付</th><th>レベル</th><th>セッション</th><th>トピック</th><th>平均スコア</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
-  }
-
-  function renderNhSection() {
-    var el = document.getElementById('hk-nh-section');
-    if (!el) return;
-    var nhResults = _quizResults.filter(function(r) { return r.app_id === 'newhorizon'; });
-    if (nhResults.length === 0) {
-      el.innerHTML = '<p style="color:#9ca3af;font-size:13px">まだ記録がありません。</p>';
-      return;
     }
-    var groups = {};
-    nhResults.forEach(function(r) {
-      var key = r.level || 'other';
-      if (!groups[key]) groups[key] = { correct:0, total:0, sessions:0 };
-      groups[key].correct  += r.correct  || 0;
-      groups[key].total    += r.total    || 0;
-      groups[key].sessions += 1;
-    });
-    var rows = Object.entries(groups).sort(function(a,b){ return b[1].sessions - a[1].sessions; });
-    var tbody = rows.map(function(entry) {
-      var key = entry[0]; var s = entry[1];
-      var pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
-      var label = NH_CAT_NAMES[key] || key;
-      var color = pct>=80 ? '#166534' : pct>=60 ? '#d97706' : '#dc2626';
-      return '<tr>' +
-        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-weight:700">' + escHtml(label) + '</td>' +
-        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280">' + s.sessions + '</td>' +
-        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:800;color:' + color + '">' + pct + '%</td>' +
-        '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6">' +
-          '<div style="background:#f3f4f6;border-radius:4px;height:8px;overflow:hidden">' +
-          '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px"></div></div>' +
-        '</td>' +
-        '</tr>';
-    }).join('');
-    el.innerHTML =
-      '<div style="overflow-x:auto">' +
-        '<table class="hk-cat-table" style="width:100%;border-collapse:collapse;font-size:13px">' +
-          '<thead><tr>' +
+
+    function renderNhSection() {
+        var el = document.getElementById('hk-nh-section');
+        if (!el) return;
+        var nhResults = _quizResults.filter(function (r) { return r.app_id === 'newhorizon'; });
+        if (nhResults.length === 0) {
+            el.innerHTML = '<p style="color:#9ca3af;font-size:13px">まだ記録がありません。</p>';
+            return;
+        }
+        var groups = {};
+        nhResults.forEach(function (r) {
+            var key = r.level || 'other';
+            if (!groups[key]) groups[key] = { correct: 0, total: 0, sessions: 0 };
+            groups[key].correct += r.correct || 0;
+            groups[key].total += r.total || 0;
+            groups[key].sessions += 1;
+        });
+        var rows = Object.entries(groups).sort(function (a, b) { return b[1].sessions - a[1].sessions; });
+        var tbody = rows.map(function (entry) {
+            var key = entry[0]; var s = entry[1];
+            var pct = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+            var label = NH_CAT_NAMES[key] || key;
+            var color = pct >= 80 ? '#166534' : pct >= 60 ? '#d97706' : '#dc2626';
+            return '<tr>' +
+                '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-weight:700">' + escHtml(label) + '</td>' +
+                '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280">' + s.sessions + '</td>' +
+                '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:800;color:' + color + '">' + pct + '%</td>' +
+                '<td style="padding:9px 10px;border-bottom:1px solid #f3f4f6">' +
+                '<div style="background:#f3f4f6;border-radius:4px;height:8px;overflow:hidden">' +
+                '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px"></div></div>' +
+                '</td>' +
+                '</tr>';
+        }).join('');
+        el.innerHTML =
+            '<div style="overflow-x:auto">' +
+            '<table class="hk-cat-table" style="width:100%;border-collapse:collapse;font-size:13px">' +
+            '<thead><tr>' +
             '<th style="text-align:left;padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700">カテゴリー</th>' +
             '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;text-align:center">回数</th>' +
             '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;text-align:center">正答率</th>' +
             '<th style="padding:7px 10px;font-size:11px;color:#9ca3af;border-bottom:1.5px solid #e5e7eb;font-weight:700;min-width:100px">スコア</th>' +
-          '</tr></thead>' +
-          '<tbody>' + tbody + '</tbody>' +
-        '</table>' +
-      '</div>';
-  }
+            '</tr></thead>' +
+            '<tbody>' + tbody + '</tbody>' +
+            '</table>' +
+            '</div>';
+    }
 
     async function saveProfile() {
-    const btn = document.getElementById('hk-save-profile');
-    btn.disabled = true; btn.textContent = '保存中...';
-    try {
-      await window.hk.updateProfile(_user.id, {
-        display_name: document.getElementById('pf-name').value.trim(),
-        class_name:   document.getElementById('pf-class').value.trim(),
-        school:       document.getElementById('pf-school').value.trim()
-      });
-      const ok = document.getElementById('hk-save-ok');
-      ok.style.display = 'inline';
-      setTimeout(() => { ok.style.display = 'none'; }, 2500);
-    } catch (e) {
-      alert('保存に失敗しました：' + e.message);
-    } finally {
-      btn.disabled = false; btn.textContent = '保存する';
-    }
-  }
-
-  // ── App deep-link helper ────────────────────────────────────────────────────
-  const APP_ICONS  = { eiken:'🎓', nh6:'📗', newhorizon:'📘' };
-  const APP_NAMES  = { eiken:'英検アプリ', nh6:'NH6 練習', newhorizon:'NH Vocab' };
-  const NH6_LEVELS = { u1:'Unit 1',u2:'Unit 2',u3:'Unit 3',u4:'Unit 4',
-                       u5:'Unit 5',u6:'Unit 6',u7:'Unit 7',u8:'Unit 8' };
-
-  function agLink(ag) {
-    switch (ag.app_id) {
-      case 'newhorizon': return 'https://hakuicity.github.io/TangoApp/' + (ag.level ? '?cat=' + ag.level : '');
-      case 'nh6':        return 'https://hakuicity.github.io/NH6WebUtil/';
-      case 'eiken':      return 'https://hakuicity.github.io/EikenApp/';
-      default:           return '#';
-    }
-  }
-
-  function agSectionLabel(ag) {
-    if (ag.app_id === 'nh6' && ag.level) return NH6_LEVELS[ag.level] || ag.level;
-    if (ag.app_id === 'newhorizon' && ag.level) return NH_CAT_NAMES[ag.level] || ag.level;
-    if (ag.app_id === 'eiken' && ag.level) return ag.level + '級';
-    return ag.category || '';
-  }
-
-  function agIsCompleted(ag) {
-    return _quizResults.some(r =>
-      r.app_id === ag.app_id &&
-      (!ag.level    || r.level    === ag.level) &&
-      (!ag.category || r.category === ag.category) &&
-      (!ag.due_date || r.created_at <= ag.due_date + 'T23:59:59')
-    );
-  }
-
-  function agBestScore(ag) {
-    const matches = _quizResults.filter(r =>
-      r.app_id === ag.app_id &&
-      (!ag.level    || r.level    === ag.level) &&
-      (!ag.category || r.category === ag.category)
-    );
-    if (!matches.length) return null;
-    return Math.max(...matches.map(r => r.score_pct || 0));
-  }
-
-  function agDueLabel(ag) {
-    if (!ag.due_date) return { text:'締切なし', cls:'ag-due--ok' };
-    const days = Math.ceil((new Date(ag.due_date) - new Date()) / 86400000);
-    if (days < 0)  return { text:'期限切れ', cls:'ag-due--ok' };
-    if (days === 0) return { text:'今日まで！', cls:'ag-due--soon' };
-    if (days <= 3)  return { text: days + '日後まで', cls:'ag-due--soon' };
-    if (days <= 7)  return { text: days + '日後まで', cls:'ag-due--near' };
-    return { text: ag.due_date + 'まで', cls:'ag-due--ok' };
-  }
-
-  function renderAssignments() {
-    const el = document.getElementById('hk-assignments');
-    if (!el) return;
-
-    if (!_assignments.length) {
-      el.innerHTML = '';
-      return;
+        const btn = document.getElementById('hk-save-profile');
+        btn.disabled = true; btn.textContent = '保存中...';
+        try {
+            await window.hk.updateProfile(_user.id, {
+                display_name: document.getElementById('pf-name').value.trim(),
+                class_name: document.getElementById('pf-class').value.trim(),
+                school: document.getElementById('pf-school').value.trim()
+            });
+            const ok = document.getElementById('hk-save-ok');
+            ok.style.display = 'inline';
+            setTimeout(() => { ok.style.display = 'none'; }, 2500);
+        } catch (e) {
+            alert('保存に失敗しました：' + e.message);
+        } finally {
+            btn.disabled = false; btn.textContent = '保存する';
+        }
     }
 
-    const active    = _assignments.filter(ag => !agIsCompleted(ag));
-    const completed = _assignments.filter(ag =>  agIsCompleted(ag));
+    // ── App deep-link helper ────────────────────────────────────────────────────
+    const APP_ICONS = { eiken: '🎓', nh6: '📗', newhorizon: '📘' };
+    const APP_NAMES = { eiken: '英検アプリ', nh6: 'NH6 練習', newhorizon: 'NH Vocab' };
+    const NH6_LEVELS = {
+        u1: 'Unit 1', u2: 'Unit 2', u3: 'Unit 3', u4: 'Unit 4',
+        u5: 'Unit 5', u6: 'Unit 6', u7: 'Unit 7', u8: 'Unit 8'
+    };
 
-    function cardHTML(ag) {
-      const done  = agIsCompleted(ag);
-      const score = agBestScore(ag);
-      const due   = agDueLabel(ag);
-      const sec   = agSectionLabel(ag);
-      const icon  = APP_ICONS[ag.app_id]  || '📱';
-      const app   = APP_NAMES[ag.app_id]  || ag.app_id;
-      const link  = agLink(ag);
-      return '<div class="ag-card' + (done ? ' ag-card--done' : '') + '">' +
-        '<div class="ag-title">' + escHtml(ag.title) + '</div>' +
-        '<div class="ag-meta">' + icon + ' ' + escHtml(app) + (sec ? ' &nbsp;›&nbsp; ' + escHtml(sec) : '') + '</div>' +
-        (ag.description ? '<div class="ag-meta" style="font-style:italic">' + escHtml(ag.description) + '</div>' : '') +
-        '<div class="ag-due ' + due.cls + '">📅 ' + escHtml(due.text) + '</div>' +
-        (done && score !== null
-          ? '<div class="ag-score" style="color:' + (score>=80?'#16a34a':score>=60?'#d97706':'#dc2626') + '">⭐ 最高点: ' + score + '%</div>'
-          : '') +
-        '<a class="ag-btn' + (done ? ' ag-btn--done' : '') + '" href="' + escHtml(link) + '" target="_blank" rel="noopener">' +
-          (done ? '✅ もう一度練習する' : '▶ 練習する') +
-        '</a>' +
-        '</div>';
+    function agLink(ag) {
+        switch (ag.app_id) {
+            case 'newhorizon': return 'https://hakuicity.github.io/TangoApp/' + (ag.level ? '?cat=' + ag.level : '');
+            case 'nh6': return 'https://hakuicity.github.io/NH6WebUtil/';
+            case 'eiken': return 'https://hakuicity.github.io/EikenApp/';
+            default: return '#';
+        }
     }
 
-    let html = '';
-
-    if (active.length) {
-      html += '<div class="hk-section">' +
-        '<div class="hk-section-title">📋 課題 <span style="font-size:12px;background:#1565C0;color:#fff;border-radius:9px;padding:1px 8px;font-weight:700">' + active.length + '</span></div>' +
-        '<div class="ag-grid">' + active.map(cardHTML).join('') + '</div>' +
-        '</div>';
+    function agSectionLabel(ag) {
+        if (ag.app_id === 'nh6' && ag.level) return NH6_LEVELS[ag.level] || ag.level;
+        if (ag.app_id === 'newhorizon' && ag.level) return NH_CAT_NAMES[ag.level] || ag.level;
+        if (ag.app_id === 'eiken' && ag.level) return ag.level + '級';
+        return ag.category || '';
     }
 
-    if (completed.length) {
-      html += '<div class="hk-section">' +
-        '<div class="hk-section-title">✅ 完了した課題</div>' +
-        '<div class="ag-grid">' + completed.map(cardHTML).join('') + '</div>' +
-        '</div>';
+    function agIsCompleted(ag) {
+        return _quizResults.some(r =>
+            r.app_id === ag.app_id &&
+            (!ag.level || r.level === ag.level) &&
+            (!ag.category || r.category === ag.category) &&
+            (!ag.due_date || r.created_at <= ag.due_date + 'T23:59:59')
+        );
     }
 
-    el.innerHTML = html;
-  }
+    function agBestScore(ag) {
+        const matches = _quizResults.filter(r =>
+            r.app_id === ag.app_id &&
+            (!ag.level || r.level === ag.level) &&
+            (!ag.category || r.category === ag.category)
+        );
+        if (!matches.length) return null;
+        return Math.max(...matches.map(r => r.score_pct || 0));
+    }
 
-  function escHtml(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+    function agDueLabel(ag) {
+        if (!ag.due_date) return { text: '締切なし', cls: 'ag-due--ok' };
+        const days = Math.ceil((new Date(ag.due_date) - new Date()) / 86400000);
+        if (days < 0) return { text: '期限切れ', cls: 'ag-due--ok' };
+        if (days === 0) return { text: '今日まで！', cls: 'ag-due--soon' };
+        if (days <= 3) return { text: days + '日後まで', cls: 'ag-due--soon' };
+        if (days <= 7) return { text: days + '日後まで', cls: 'ag-due--near' };
+        return { text: ag.due_date + 'まで', cls: 'ag-due--ok' };
+    }
 
-  init();
+    function renderAssignments() {
+        const el = document.getElementById('hk-assignments');
+        if (!el) return;
+
+        if (!_assignments.length) {
+            el.innerHTML = '';
+            return;
+        }
+
+        const active = _assignments.filter(ag => !agIsCompleted(ag));
+        const completed = _assignments.filter(ag => agIsCompleted(ag));
+
+        function cardHTML(ag) {
+            const done = agIsCompleted(ag);
+            const score = agBestScore(ag);
+            const due = agDueLabel(ag);
+            const sec = agSectionLabel(ag);
+            const icon = APP_ICONS[ag.app_id] || '📱';
+            const app = APP_NAMES[ag.app_id] || ag.app_id;
+            const link = agLink(ag);
+            return '<div class="ag-card' + (done ? ' ag-card--done' : '') + '">' +
+                '<div class="ag-title">' + escHtml(ag.title) + '</div>' +
+                '<div class="ag-meta">' + icon + ' ' + escHtml(app) + (sec ? ' &nbsp;›&nbsp; ' + escHtml(sec) : '') + '</div>' +
+                (ag.description ? '<div class="ag-meta" style="font-style:italic">' + escHtml(ag.description) + '</div>' : '') +
+                '<div class="ag-due ' + due.cls + '">📅 ' + escHtml(due.text) + '</div>' +
+                (done && score !== null
+                    ? '<div class="ag-score" style="color:' + (score >= 80 ? '#16a34a' : score >= 60 ? '#d97706' : '#dc2626') + '">⭐ 最高点: ' + score + '%</div>'
+                    : '') +
+                '<a class="ag-btn' + (done ? ' ag-btn--done' : '') + '" href="' + escHtml(link) + '" target="_blank" rel="noopener">' +
+                (done ? '✅ もう一度練習する' : '▶ 練習する') +
+                '</a>' +
+                '</div>';
+        }
+
+        let html = '';
+
+        if (active.length) {
+            html += '<div class="hk-section">' +
+                '<div class="hk-section-title">📋 課題 <span style="font-size:12px;background:#1565C0;color:#fff;border-radius:9px;padding:1px 8px;font-weight:700">' + active.length + '</span></div>' +
+                '<div class="ag-grid">' + active.map(cardHTML).join('') + '</div>' +
+                '</div>';
+        }
+
+        if (completed.length) {
+            html += '<div class="hk-section">' +
+                '<div class="hk-section-title">✅ 完了した課題</div>' +
+                '<div class="ag-grid">' + completed.map(cardHTML).join('') + '</div>' +
+                '</div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    function escHtml(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    init();
 })();
