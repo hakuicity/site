@@ -49,6 +49,7 @@
     .portal-card--eiken::before  { background: #2563eb; }
     .portal-card--nh::before     { background: #16a34a; }
     .portal-card--account::before{ background: #7c3aed; }
+    .portal-card--nh6::before       { background: #15803d; }
     .portal-card--gradebook::before{ background: #2E7D32; }
     .portal-card--admin::before  { background: #dc2626; }
     .portal-logout-row {
@@ -150,8 +151,17 @@
             <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">ユーティリティ</span>
           </a>
 
+          <a class="portal-card portal-card--nh6"
+             href="https://hakuicity.github.io/NH6WebUtil/" target="_blank" rel="noopener">
+            <div class="portal-card-icon">📗</div>
+            <div class="portal-card-title">NH6 練習</div>
+            <div class="portal-card-desc">New Horizons 6年生の文法・応答・書き練習。</div>
+            <span class="portal-card-badge" style="background:#f0fdf4;color:#166534">NH6</span>
+          </a>
+
           ${isAdmin ? `
-          <a class="portal-card portal-card--gradebook" href="/site/gradebook/">
+          <a class="portal-card portal-card--gradebook"
+             href="https://hakuicity.github.io/GradeBook/" target="_blank" rel="noopener">
             <div class="portal-card-icon">📒</div>
             <div class="portal-card-title">グレードブック</div>
             <div class="portal-card-desc">課題の作成・提出状況・クラス成績の確認。</div>
