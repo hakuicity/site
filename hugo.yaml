@@ -23,30 +23,11 @@ markup:
 menu:
   main:
     - name: ホーム
-      pageRef: /
+      url: /
       weight: 1
-    - name: リソース
-      pageRef: /resources
-      weight: 2
-    - name: サイト
-      pageRef: /sites
-      weight: 3
-    - name: ツール
-      pageRef: /tools
-      weight: 4
     - name: ポータル
-      url: /portal
-      weight: 5
-    - name: について
-      pageRef: /about
-      weight: 6
-    - name: マイページ
-      pageRef: /login
-      weight: 7
-    - name: Search
-      weight: 8
-      params:
-        type: search
+      url: /portal/
+      weight: 2
         
 params:
   navbar:
